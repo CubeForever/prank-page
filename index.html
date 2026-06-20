@@ -5,191 +5,231 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no,viewport-fit=cover">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Cache-Control" content="no-cache,no-store,must-revalidate">
-<title>填完告诉你一个秘密</title>
+<title>灵魂性格解码</title>
 <style>
+:root{
+  --primary:#667eea;--primary-dark:#764ba2;
+  --accent:#ff6b6b;--accent2:#ee5a24;
+  --bg-card:rgba(255,255,255,.95);
+  --text:#333;--text-light:#666;--text-muted:#bbb;
+  --border:#e0e0e0;--radius:12px;--radius-lg:16px;
+  --shadow:0 20px 60px rgba(0,0,0,.25);
+  --font:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+}
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{width:100%;height:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif}
+html,body{width:100%;height:100%;overflow:hidden;font-family:var(--font)}
+body{-webkit-overflow-scrolling:touch;overscroll-behavior:none}
 
-/* ===== 表单页面 ===== */
+/* ===== 共享 ===== */
+.page{position:fixed;top:0;left:0;width:100%;height:100%;transition:opacity .4s}
+.page.hidden{opacity:0;pointer-events:none}
+.page.gone{display:none}
 #formPage{
-  width:100%;height:100%;
-  background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);
-  display:flex;flex-direction:column;align-items:center;justify-content:center;
-  padding:20px;transition:opacity .3s;
+  background:linear-gradient(135deg,var(--primary) 0%,var(--primary-dark) 100%);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;z-index:10;
 }
-#formPage.hidden{display:none}
+.form-title{color:#fff;font-size:18px;font-weight:700;text-align:center;margin-bottom:24px;text-shadow:0 2px 10px rgba(0,0,0,.3);line-height:1.6}
+.form-title .emoji{font-size:26px;display:block;margin-bottom:6px}
+.form-subtitle{color:rgba(255,255,255,.65);font-size:12px;text-align:center;margin-top:16px;line-height:1.5}
 
-.form-title{
-  color:#fff;font-size:20px;font-weight:700;text-align:center;
-  margin-bottom:32px;text-shadow:0 2px 10px rgba(0,0,0,.3);
-  line-height:1.6;
-}
-.form-title span{
-  display:inline-block;
-  animation:titlePulse 2s ease-in-out infinite;
-}
-@keyframes titlePulse{
-  0%,100%{transform:scale(1);opacity:1}
-  50%{transform:scale(1.05);opacity:.85}
-}
+/* 进度条 */
+.progress-bar{width:100%;max-width:360px;height:4px;background:rgba(255,255,255,.2);border-radius:2px;margin-bottom:20px;overflow:hidden}
+.progress-fill{height:100%;background:#fff;border-radius:2px;transition:width .4s ease;width:0%}
+.step-label{color:rgba(255,255,255,.5);font-size:11px;text-align:center;margin-bottom:12px}
 
-.form-card{
-  width:100%;max-width:360px;
-  background:rgba(255,255,255,.95);
-  border-radius:16px;padding:28px 24px;
-  box-shadow:0 20px 60px rgba(0,0,0,.25);
-}
+/* 表单卡片 */
+.form-card{width:100%;max-width:360px;background:var(--bg-card);border-radius:var(--radius-lg);padding:24px;box-shadow:var(--shadow);min-height:200px;position:relative;overflow:hidden}
+.step{display:none}
+.step.active{display:block;animation:stepIn .3s ease}
+@keyframes stepIn{from{opacity:0;transform:translateX(30px)}to{opacity:1;transform:translateX(0)}}
 
-.field{margin-bottom:18px}
-.field label{
-  display:block;font-size:14px;font-weight:600;color:#333;
-  margin-bottom:6px;
+.field{margin-bottom:16px}
+.field label{display:block;font-size:14px;font-weight:600;color:var(--text);margin-bottom:6px}
+.field input,.field select{width:100%;height:44px;border:2px solid var(--border);border-radius:10px;padding:0 14px;font-size:15px;color:var(--text);outline:none;transition:border-color .2s;appearance:none;background:#fafafa}
+.field input:focus,.field select:focus{border-color:var(--primary);background:#fff}
+.field input::placeholder{color:var(--text-muted)}
+
+/* 标签选择 */
+.tag-grid{display:flex;flex-wrap:wrap;gap:8px}
+.tag-item{
+  padding:8px 16px;border:2px solid var(--border);border-radius:20px;
+  font-size:13px;color:var(--text-light);cursor:pointer;transition:all .2s;
+  background:#fafafa;user-select:none;
 }
-.field input,.field select{
-  width:100%;height:46px;
-  border:2px solid #e0e0e0;border-radius:10px;
-  padding:0 14px;font-size:15px;color:#333;
-  outline:none;transition:border-color .2s;
-  -webkit-appearance:none;appearance:none;
-  background:#fafafa;
+.tag-item.selected{border-color:var(--primary);color:var(--primary);background:#f0eeff;font-weight:600}
+.tag-item:active{transform:scale(.95)}
+
+/* 时间段选择 */
+.time-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.time-item{
+  text-align:center;padding:10px 4px;border:2px solid var(--border);border-radius:10px;
+  font-size:12px;color:var(--text-light);cursor:pointer;transition:all .2s;background:#fafafa;
 }
-.field input:focus,.field select:focus{
-  border-color:#667eea;background:#fff;
-}
-.field input::placeholder{color:#bbb}
+.time-item .icon{font-size:18px;display:block;margin-bottom:2px}
+.time-item.selected{border-color:var(--primary);color:var(--primary);background:#f0eeff;font-weight:600}
+
+/* 性别 */
 .gender-row{display:flex;gap:12px}
 .gender-row label{
   flex:1;display:flex;align-items:center;justify-content:center;
-  height:46px;border:2px solid #e0e0e0;border-radius:10px;
-  font-size:15px;color:#666;cursor:pointer;transition:all .2s;
-  background:#fafafa;
+  height:44px;border:2px solid var(--border);border-radius:10px;
+  font-size:15px;color:var(--text-light);cursor:pointer;transition:all .2s;background:#fafafa;
 }
 .gender-row input{display:none}
-.gender-row input:checked+label{
-  border-color:#667eea;color:#667eea;background:#f0eeff;font-weight:600;
-}
+.gender-row input:checked+label{border-color:var(--primary);color:var(--primary);background:#f0eeff;font-weight:600}
 
-.submit-btn{
-  width:100%;height:50px;
-  background:linear-gradient(90deg,#ff6b6b,#ee5a24);
-  border:none;border-radius:12px;
-  color:#fff;font-size:17px;font-weight:700;
-  cursor:pointer;
-  box-shadow:0 6px 20px rgba(238,90,36,.4);
-  transition:transform .15s,box-shadow .15s;
-  margin-top:8px;
-  position:relative;overflow:hidden;
+/* 按钮 */
+.btn-row{display:flex;gap:10px;margin-top:16px}
+.btn{
+  flex:1;height:46px;border:none;border-radius:var(--radius);
+  font-size:15px;font-weight:700;cursor:pointer;transition:all .15s;
 }
-.submit-btn:active{transform:scale(.97);box-shadow:0 2px 10px rgba(238,90,36,.3)}
-.submit-btn::after{
-  content:'';position:absolute;top:0;left:-100%;
-  width:100%;height:100%;
-  background:linear-gradient(90deg,transparent,rgba(255,255,255,.2),transparent);
-  animation:btnShine 2.5s ease-in-out infinite;
-}
-@keyframes btnShine{0%{left:-100%}50%,100%{left:100%}}
+.btn:active{transform:scale(.97)}
+.btn-prev{background:#f0f0f0;color:var(--text-light)}
+.btn-next{background:linear-gradient(90deg,var(--accent),var(--accent2));color:#fff;box-shadow:0 4px 15px rgba(238,90,36,.35)}
+.btn-next.full{flex:2}
+.btn:disabled{opacity:.4;cursor:not-allowed}
 
-/* ===== 加载遮罩 ===== */
-#loadingOverlay{
-  display:none;position:fixed;top:0;left:0;
-  width:100%;height:100%;z-index:50;
-  background:rgba(0,0,0,.6);
-  flex-direction:column;align-items:center;justify-content:center;
+/* ===== 分析页 ===== */
+#analyzingPage{
+  background:#0a0a0a;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:20;
 }
-#loadingOverlay.show{display:flex}
-.spinner{
-  width:40px;height:40px;
-  border:4px solid rgba(255,255,255,.3);
-  border-top-color:#fff;border-radius:50%;
-  animation:spin .8s linear infinite;
+.analyze-ring{
+  width:120px;height:120px;position:relative;margin-bottom:30px;
 }
-@keyframes spin{to{transform:rotate(360deg)}}
-.loading-text{color:#fff;font-size:15px;margin-top:16px}
+.analyze-ring svg{width:100%;height:100%;transform:rotate(-90deg)}
+.analyze-ring .bg{stroke:rgba(255,255,255,.08);fill:none;stroke-width:4}
+.analyze-ring .fg{stroke:var(--accent);fill:none;stroke-width:4;stroke-linecap:round;stroke-dasharray:339.29;stroke-dashoffset:339.29;transition:stroke-dashoffset .3s}
+.analyze-percent{
+  position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  color:#fff;font-size:32px;font-weight:700;
+}
+.analyze-text{color:rgba(255,255,255,.6);font-size:14px;text-align:center;min-height:40px;transition:opacity .3s}
+.analyze-dots{color:rgba(255,255,255,.3);font-size:11px;margin-top:12px;letter-spacing:2px}
+@keyframes dotPulse{0%,100%{opacity:.3}50%{opacity:1}}
 
-/* ===== 恐怖画面 ===== */
-#scarePage{
-  display:none;position:fixed;top:0;left:0;
-  width:100%;height:100%;z-index:100;
-  background:#000;
-}
+/* ===== 恐怖页 ===== */
+#scarePage{display:none;position:fixed;top:0;left:0;width:100%;height:100%;z-index:100;background:#000}
 #scarePage.show{display:block}
-
-#scareCanvas{
-  width:100%;height:100%;
-  position:absolute;top:0;left:0;
-}
-
-#flashOverlay{
-  position:absolute;top:0;left:0;width:100%;height:100%;
-  background:#fff;opacity:0;pointer-events:none;
-  z-index:101;transition:opacity 0.03s;
-}
-
-/* 血红边框 */
-#bloodBorder{
-  position:absolute;top:0;left:0;width:100%;height:100%;
-  border:10px solid transparent;z-index:104;
-  pointer-events:none;
-  animation:bloodPulse .2s infinite;
-}
+#scareCanvas{width:100%;height:100%;position:absolute;top:0;left:0}
+#flashOverlay{position:absolute;top:0;left:0;width:100%;height:100%;background:#fff;opacity:0;pointer-events:none;z-index:101;transition:opacity 0.03s}
+#bloodBorder{position:absolute;top:0;left:0;width:100%;height:100%;border:8px solid transparent;z-index:104;pointer-events:none;animation:bloodPulse .2s infinite}
 @keyframes bloodPulse{
   0%,100%{border-color:transparent;box-shadow:inset 0 0 40px rgba(255,0,0,0)}
   50%{border-color:#aa0000;box-shadow:inset 0 0 120px rgba(255,0,0,.6)}
 }
-
-/* 扫描线 */
 .scanlines{
   position:absolute;top:0;left:0;width:100%;height:100%;
-  background:repeating-linear-gradient(
-    0deg,transparent,transparent 2px,
-    rgba(0,0,0,.2) 2px,rgba(0,0,0,.2) 4px
-  );
-  pointer-events:none;z-index:105;
-  animation:scanMove .08s linear infinite;
+  background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.15) 2px,rgba(0,0,0,.15) 4px);
+  pointer-events:none;z-index:105;animation:scanMove .08s linear infinite;
 }
 @keyframes scanMove{from{background-position:0 0}to{background-position:0 4px}}
 
-body{-webkit-overflow-scrolling:touch;overscroll-behavior:none}
+/* 二次惊吓 */
+#secondScare{display:none;position:fixed;top:0;left:0;width:100%;height:100%;z-index:200}
+#secondScare.show{display:block}
+#secondCanvas{width:100%;height:100%}
+
+/* 吐司提示 */
+@keyframes toastFade{
+  0%{opacity:0;transform:translate(-50%,-50%) scale(.8)}
+  10%{opacity:1;transform:translate(-50%,-50%) scale(1)}
+  80%{opacity:1}100%{opacity:0}
+}
 </style>
 </head>
 <body>
 
-<div id="formPage">
+<!-- ===== 表单页 ===== -->
+<div id="formPage" class="page">
   <div class="form-title">
-    <span>填写完以下信息就会告诉你一个秘密</span>
+    <span class="emoji">🔮</span>
+    灵魂性格解码
   </div>
-  <div class="form-card">
-    <div class="field">
-      <label>姓名</label>
-      <input type="text" id="nameInput" placeholder="请输入你的姓名" autocomplete="off">
-    </div>
-    <div class="field">
-      <label>性别</label>
-      <div class="gender-row">
-        <input type="radio" name="gender" id="male" value="male">
-        <label for="male">男</label>
-        <input type="radio" name="gender" id="female" value="female">
-        <label for="female">女</label>
+  <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+  <div class="step-label" id="stepLabel">第 1 步 / 共 4 步</div>
+  <div class="form-card" id="formCard">
+
+    <!-- Step 1: 生日时辰 -->
+    <div class="step active" data-step="1">
+      <div class="field"><label>🎂 你的生日</label><input type="date" id="birthdayInput"></div>
+      <div class="field"><label>🌙 出生时辰（可随便选）</label>
+        <div class="time-grid" id="timeGrid">
+          <div class="time-item" data-val="子时"><span class="icon">🐭</span>子时<br><small>23-01</small></div>
+          <div class="time-item" data-val="丑时"><span class="icon">🐂</span>丑时<br><small>01-03</small></div>
+          <div class="time-item" data-val="寅时"><span class="icon">🐅</span>寅时<br><small>03-05</small></div>
+          <div class="time-item" data-val="卯时"><span class="icon">🐇</span>卯时<br><small>05-07</small></div>
+          <div class="time-item" data-val="辰时"><span class="icon">🐉</span>辰时<br><small>07-09</small></div>
+          <div class="time-item" data-val="巳时"><span class="icon">🐍</span>巳时<br><small>09-11</small></div>
+          <div class="time-item" data-val="午时"><span class="icon">🐎</span>午时<br><small>11-13</small></div>
+          <div class="time-item" data-val="未时"><span class="icon">🐑</span>未时<br><small>13-15</small></div>
+          <div class="time-item" data-val="申时"><span class="icon">🐒</span>申时<br><small>15-17</small></div>
+          <div class="time-item" data-val="酉时"><span class="icon">🐔</span>酉时<br><small>17-19</small></div>
+          <div class="time-item" data-val="戌时"><span class="icon">🐶</span>戌时<br><small>19-21</small></div>
+          <div class="time-item" data-val="亥时"><span class="icon">🐷</span>亥时<br><small>21-23</small></div>
+        </div>
       </div>
+      <div class="btn-row"><button class="btn btn-next full" id="next1">下一步 →</button></div>
     </div>
-    <div class="field">
-      <label>生日</label>
-      <input type="date" id="birthdayInput">
+
+    <!-- Step 2: 关键词 -->
+    <div class="step" data-step="2">
+      <div class="field"><label>✨ 选 3 个关键词描述你自己</label>
+        <div class="tag-grid" id="tagGrid">
+          <div class="tag-item" data-tag="温柔">温柔</div>
+          <div class="tag-item" data-tag="幽默">幽默</div>
+          <div class="tag-item" data-tag="理性">理性</div>
+          <div class="tag-item" data-tag="感性">感性</div>
+          <div class="tag-item" data-tag="独立">独立</div>
+          <div class="tag-item" data-tag="念旧">念旧</div>
+          <div class="tag-item" data-tag="完美主义">完美主义</div>
+          <div class="tag-item" data-tag="乐观">乐观</div>
+          <div class="tag-item" data-tag="好奇心强">好奇心强</div>
+          <div class="tag-item" data-tag="社恐">社恐</div>
+          <div class="tag-item" data-tag="理想主义">理想主义</div>
+          <div class="tag-item" data-tag="行动派">行动派</div>
+        </div>
+      </div>
+      <div class="btn-row"><button class="btn btn-prev" id="prev2">← 上一步</button><button class="btn btn-next" id="next2">下一步 →</button></div>
     </div>
-    <div class="field">
-      <label>手机号</label>
-      <input type="tel" id="phoneInput" placeholder="请输入手机号" maxlength="11" autocomplete="off">
+
+    <!-- Step 3: 性别 -->
+    <div class="step" data-step="3">
+      <div class="field"><label>👤 你的性别</label>
+        <div class="gender-row">
+          <input type="radio" name="gender" id="male" value="male"><label for="male">男</label>
+          <input type="radio" name="gender" id="female" value="female"><label for="female">女</label>
+        </div>
+      </div>
+      <div class="field"><label>🔮 姓名（用于解读）</label><input type="text" id="nameInput" placeholder="请输入你的姓名" autocomplete="off"></div>
+      <div class="btn-row"><button class="btn btn-prev" id="prev3">← 上一步</button><button class="btn btn-next" id="next3">下一步 →</button></div>
     </div>
-    <button class="submit-btn" id="submitBtn">查看秘密</button>
+
+    <!-- Step 4: 手机号 -->
+    <div class="step" data-step="4">
+      <div class="field"><label>📱 手机号（生成专属命盘）</label><input type="tel" id="phoneInput" placeholder="请输入手机号" maxlength="11" autocomplete="off"></div>
+      <div style="text-align:center;padding:16px 0 4px;font-size:36px">🌟</div>
+      <p style="text-align:center;color:var(--text-light);font-size:13px;line-height:1.8">
+        所有信息已准备就绪<br>点击下方按钮揭晓你的灵魂密码
+      </p>
+      <div class="btn-row"><button class="btn btn-prev" id="prev4">← 上一步</button><button class="btn btn-next" id="submitBtn">✨ 揭晓灵魂密码</button></div>
+    </div>
+
   </div>
-  <div style="color:rgba(255,255,255,.55);font-size:12px;text-align:center;margin-top:20px;line-height:1.6">温馨提示：心脏不太好的人请谨慎观看！</div>
+  <div class="form-subtitle">纯属娱乐 · 结果仅供消遣</div>
 </div>
 
-<div id="loadingOverlay">
-  <div class="spinner"></div>
-  <div class="loading-text">正在加载秘密...</div>
+<!-- ===== 分析页 ===== -->
+<div id="analyzingPage" class="page gone hidden">
+  <div class="analyze-ring">
+    <svg viewBox="0 0 120 120"><circle class="bg" cx="60" cy="60" r="54"/><circle class="fg" id="ringFg" cx="60" cy="60" r="54"/></svg>
+    <div class="analyze-percent" id="analyzePercent">0%</div>
+  </div>
+  <div class="analyze-text" id="analyzeText">正在连接灵魂数据库...</div>
+  <div class="analyze-dots">···</div>
 </div>
 
+<!-- ===== 恐怖页 ===== -->
 <div id="scarePage">
   <canvas id="scareCanvas"></canvas>
   <div id="flashOverlay"></div>
@@ -197,642 +237,774 @@ body{-webkit-overflow-scrolling:touch;overscroll-behavior:none}
   <div class="scanlines"></div>
 </div>
 
+<!-- ===== 二次惊吓 ===== -->
+<div id="secondScare"><canvas id="secondCanvas"></canvas></div>
+
 <script>
 (function(){
   function $(id){return document.getElementById(id)}
   document.body.addEventListener('touchmove',function(e){e.preventDefault()},{passive:false});
 
-  var audioCtx = null;
+  /* ======================== 表单逻辑 ======================== */
+  var currentStep=1,totalSteps=4;
+  var selectedTime='',selectedTags=[];
+  var isRunning=false;
+
+  function updateProgress(){
+    $('progressFill').style.width=((currentStep-1)/totalSteps*100)+'%';
+    $('stepLabel').textContent='第 '+currentStep+' 步 / 共 '+totalSteps+' 步';
+  }
+  function goStep(n){
+    document.querySelectorAll('.step').forEach(function(s){s.classList.remove('active')});
+    var target=document.querySelector('[data-step="'+n+'"]');
+    if(target)target.classList.add('active');
+    currentStep=n;updateProgress();
+  }
+  // 时间选择
+  $('timeGrid').addEventListener('click',function(e){
+    var item=e.target.closest('.time-item');if(!item)return;
+    document.querySelectorAll('#timeGrid .time-item').forEach(function(t){t.classList.remove('selected')});
+    item.classList.add('selected');selectedTime=item.dataset.val;
+  });
+  // 标签选择(最多3个)
+  $('tagGrid').addEventListener('click',function(e){
+    var item=e.target.closest('.tag-item');if(!item)return;
+    var tag=item.dataset.tag;
+    if(item.classList.contains('selected')){
+      item.classList.remove('selected');
+      selectedTags=selectedTags.filter(function(t){return t!==tag});
+    }else{
+      if(selectedTags.length>=3){showToast('最多选 3 个哦');return}
+      item.classList.add('selected');selectedTags.push(tag);
+    }
+  });
+  // 步骤按钮
+  $('next1').addEventListener('click',function(){
+    if(!$('birthdayInput').value){showToast('请选择生日');return}
+    if(!selectedTime){showToast('请选择出生时辰');return}
+    goStep(2);
+  });
+  $('prev2').addEventListener('click',function(){goStep(1)});
+  $('next2').addEventListener('click',function(){
+    if(selectedTags.length<3){showToast('请选择 3 个关键词');return}
+    goStep(3);
+  });
+  $('prev3').addEventListener('click',function(){goStep(2)});
+  $('next3').addEventListener('click',function(){
+    if(!document.querySelector('input[name="gender"]:checked')){showToast('请选择性别');return}
+    if(!$('nameInput').value.trim()){showToast('请输入姓名');return}
+    goStep(4);
+  });
+  $('prev4').addEventListener('click',function(){goStep(3)});
+  // 提交
+  $('submitBtn').addEventListener('click',function(){
+    if(isRunning)return;
+    if(!/^1\d{10}$/.test($('phoneInput').value.trim())){showToast('请输入正确的手机号');return}
+    isRunning=true;
+    startAnalyzing();
+  });
+
+  /* ======================== 分析页 ======================== */
+  var analyzePhrases=[
+    '正在连接灵魂数据库...',
+    '正在解析你的性格密码...',
+    '正在读取星座命盘数据...',
+    '正在计算命运轨迹...',
+    '正在与潜意识建立链接...',
+    '正在生成专属灵魂画像...',
+    '正在破解你的前世记忆...',
+    '即将揭晓灵魂密码...'
+  ];
+  function startAnalyzing(){
+    // 切换页面
+    $('formPage').classList.add('hidden');
+    setTimeout(function(){$('formPage').classList.add('gone');$('analyzingPage').classList.remove('gone')},400);
+    setTimeout(function(){$('analyzingPage').classList.remove('hidden')},450);
+
+    // 动画
+    var ring=$('ringFg'),pct=$('analyzePercent'),txt=$('analyzeText');
+    var circumference=339.29;
+    var startTime=performance.now(),duration=4000;
+    function animateRing(){
+      var elapsed=performance.now()-startTime;
+      var progress=Math.min(elapsed/duration,1);
+      // easing
+      var eased=1-Math.pow(1-progress,3);
+      ring.style.strokeDashoffset=circumference*(1-eased);
+      pct.textContent=Math.floor(eased*100)+'%';
+      // 切换文案
+      var phraseIdx=Math.min(Math.floor(progress*analyzePhrases.length),analyzePhrases.length-1);
+      txt.textContent=analyzePhrases[phraseIdx];
+      if(progress<1){requestAnimationFrame(animateRing)}
+      else{setTimeout(triggerScare,300)}
+    }
+    requestAnimationFrame(animateRing);
+  }
+
+  /* ======================== 音效系统 ======================== */
+  var audioCtx=null;
   function initAudio(){
-    if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    if(audioCtx.state === 'suspended') audioCtx.resume();
+    if(!audioCtx)audioCtx=new(window.AudioContext||window.webkitAudioContext)();
+    if(audioCtx.state==='suspended')audioCtx.resume();
     return audioCtx;
   }
 
-  /* ========== 极致恐怖音效 ========== */
-  function playScream(){
-    var ctx = initAudio();
-    var now = ctx.currentTime;
-    var master = ctx.createGain();
-    master.gain.setValueAtTime(1, now);
-    master.connect(ctx.destination);
-
-    // 1. 女鬼尖叫声 - 多层叠加
-    function makeScream(startAt, dur, freqStart, freqEnd, vol){
-      var len = ctx.sampleRate * dur;
-      var buf = ctx.createBuffer(1, len, ctx.sampleRate);
-      var d = buf.getChannelData(0);
-      for(var i=0;i<len;i++){
-        var progress = i/len;
-        var freq = freqStart + (freqEnd - freqStart) * progress;
-        var wave = Math.sin(2 * Math.PI * freq * i / ctx.sampleRate);
-        var noise = (Math.random()*2-1);
-        // 混合波形产生刺耳尖叫
-        d[i] = (wave * 0.6 + noise * 0.4) * Math.pow(1-progress, 0.3);
+  // 心跳声
+  function playHeartbeat(ctx,startAt,count,initialInterval){
+    var now=ctx.currentTime;
+    var master=ctx.createGain();
+    master.gain.value=0.5;master.connect(ctx.destination);
+    var t=now+startAt;
+    for(var i=0;i<count;i++){
+      var interval=initialInterval*Math.pow(0.85,i); // 加速
+      // 双击心跳
+      for(var j=0;j<2;j++){
+        var osc=ctx.createOscillator();
+        osc.type='sine';
+        osc.frequency.setValueAtTime(50,t);
+        osc.frequency.exponentialRampToValueAtTime(30,t+0.1);
+        var g=ctx.createGain();
+        g.gain.setValueAtTime(0,t);
+        g.gain.linearRampToValueAtTime(0.7,t+0.01);
+        g.gain.exponentialRampToValueAtTime(0.001,t+0.15);
+        osc.connect(g);g.connect(master);
+        osc.start(t);osc.stop(t+0.15);
+        t+=0.18;
       }
-      var src = ctx.createBufferSource();
-      src.buffer = buf;
-      var g = ctx.createGain();
-      g.gain.setValueAtTime(0, now+startAt);
-      g.gain.linearRampToValueAtTime(vol, now+startAt+0.01);
-      g.gain.setValueAtTime(vol, now+startAt+dur*0.6);
-      g.gain.linearRampToValueAtTime(0, now+startAt+dur);
-      src.connect(g);
-      g.connect(master);
-      src.start(now+startAt);
-      src.stop(now+startAt+dur);
+      t+=interval-0.36;
     }
-
-    // 多层尖叫叠加
-    makeScream(0, 2.5, 800, 4500, 0.7);
-    makeScream(0.05, 2.0, 1200, 5500, 0.5);
-    makeScream(0.1, 1.8, 2000, 7000, 0.4);
-    makeScream(0, 1.5, 400, 2000, 0.35);
-
-    // 2. 地狱低频轰鸣
-    function makeBoom(startAt){
-      var osc = ctx.createOscillator();
-      osc.type = 'sawtooth';
-      osc.frequency.setValueAtTime(90, now+startAt);
-      osc.frequency.exponentialRampToValueAtTime(20, now+startAt+2);
-      var g = ctx.createGain();
-      g.gain.setValueAtTime(0, now+startAt);
-      g.gain.linearRampToValueAtTime(0.6, now+startAt+0.005);
-      g.gain.setValueAtTime(0.6, now+startAt+1.2);
-      g.gain.linearRampToValueAtTime(0, now+startAt+2.5);
-      osc.connect(g); g.connect(master);
-      osc.start(now+startAt); osc.stop(now+startAt+2.5);
-    }
-    makeBoom(0);
-    makeBoom(0.3);
-    makeBoom(0.7);
-
-    // 3. 不和谐音群
-    var disFreqs = [185, 207, 233, 277, 311, 369, 466, 554];
-    for(var j=0;j<disFreqs.length;j++){
-      var o = ctx.createOscillator();
-      o.type = 'sine';
-      o.frequency.value = disFreqs[j] + Math.sin(j*7)*8;
-      var g = ctx.createGain();
-      g.gain.setValueAtTime(0,now);
-      g.gain.linearRampToValueAtTime(0.12, now+0.03);
-      g.gain.setValueAtTime(0.12, now+2);
-      g.gain.linearRampToValueAtTime(0, now+4);
-      o.connect(g); g.connect(master);
-      o.start(now+j*0.015); o.stop(now+4);
-    }
-
-    // 4. 持续白噪声嘶嘶声
-    var noiseLen = ctx.sampleRate * 4;
-    var noiseBuf = ctx.createBuffer(2, noiseLen, ctx.sampleRate);
-    for(var ch=0;ch<2;ch++){
-      var nd = noiseBuf.getChannelData(ch);
-      for(var ni=0;ni<noiseLen;ni++){
-        nd[ni] = (Math.random()*2-1) * (0.3 + 0.7*Math.pow(Math.sin(ni/ctx.sampleRate*Math.PI*2),2));
-      }
-    }
-    var noiseSrc = ctx.createBufferSource();
-    noiseSrc.buffer = noiseBuf;
-    var noiseFilt = ctx.createBiquadFilter();
-    noiseFilt.type = 'bandpass';
-    noiseFilt.frequency.value = 6000;
-    noiseFilt.Q.value = 3;
-    var noiseG = ctx.createGain();
-    noiseG.gain.setValueAtTime(0, now);
-    noiseG.gain.linearRampToValueAtTime(0.25, now+0.02);
-    noiseG.gain.setValueAtTime(0.25, now+3);
-    noiseG.gain.linearRampToValueAtTime(0, now+4);
-    noiseSrc.connect(noiseFilt);
-    noiseFilt.connect(noiseG);
-    noiseG.connect(master);
-    noiseSrc.start(now);
-    noiseSrc.stop(now+4);
-
-    // 5. 反复突然尖刺（心跳般的不规则恐怖节奏）
-    var spikeTimes = [0.5, 0.7, 1.0, 1.1, 1.5, 2.0, 2.05, 2.8, 3.5, 3.52];
-    for(var s=0;s<spikeTimes.length;s++){
-      var sOsc = ctx.createOscillator();
-      sOsc.type = 'square';
-      sOsc.frequency.value = 80 + s*20;
-      var sG = ctx.createGain();
-      sG.gain.setValueAtTime(0, now+spikeTimes[s]);
-      sG.gain.linearRampToValueAtTime(0.5, now+spikeTimes[s]+0.005);
-      sG.gain.linearRampToValueAtTime(0, now+spikeTimes[s]+0.08);
-      sOsc.connect(sG); sG.connect(master);
-      sOsc.start(now+spikeTimes[s]); sOsc.stop(now+spikeTimes[s]+0.1);
-    }
-
-    // 6. 倒放人声效果（低频反向锯齿波模拟）
-    var revOsc = ctx.createOscillator();
-    revOsc.type = 'sawtooth';
-    revOsc.frequency.setValueAtTime(150, now+1);
-    revOsc.frequency.linearRampToValueAtTime(50, now+3.5);
-    var revG = ctx.createGain();
-    revG.gain.setValueAtTime(0, now+1);
-    revG.gain.linearRampToValueAtTime(0.2, now+1.2);
-    revG.gain.setValueAtTime(0.2, now+3);
-    revG.gain.linearRampToValueAtTime(0, now+3.8);
-    var revFilt = ctx.createBiquadFilter();
-    revFilt.type = 'lowpass';
-    revFilt.frequency.value = 400;
-    revOsc.connect(revFilt);
-    revFilt.connect(revG);
-    revG.connect(master);
-    revOsc.start(now+1); revOsc.stop(now+3.8);
   }
 
-  /* ========== 极致恐怖 Canvas 绘制 ========== */
-  var canvas, ctx2, animId;
-  var scareStartTime = 0;
-  var bloodDrops = [];
-  var eyeDrips = [];
-  var glitchTimer = 0;
-  var faceScale = 1;
+  // 门吱呀声
+  function playCreak(ctx,startAt){
+    var now=ctx.currentTime+startAt;
+    var osc=ctx.createOscillator();
+    osc.type='sawtooth';
+    osc.frequency.setValueAtTime(200,now);
+    osc.frequency.linearRampToValueAtTime(600,now+0.5);
+    osc.frequency.linearRampToValueAtTime(150,now+1.2);
+    var g=ctx.createGain();
+    g.gain.setValueAtTime(0,now);
+    g.gain.linearRampToValueAtTime(0.15,now+0.1);
+    g.gain.linearRampToValueAtTime(0.08,now+0.8);
+    g.gain.linearRampToValueAtTime(0,now+1.5);
+    var filt=ctx.createBiquadFilter();filt.type='bandpass';filt.frequency.value=400;filt.Q.value=8;
+    osc.connect(filt);filt.connect(g);g.connect(ctx.destination);
+    osc.start(now);osc.stop(now+1.5);
+  }
+
+  // 耳语效果(噪声 + 滤波)
+  function playWhisper(ctx,startAt,dur){
+    var now=ctx.currentTime+startAt;
+    var len=ctx.sampleRate*dur;
+    var buf=ctx.createBuffer(1,len,ctx.sampleRate);
+    var d=buf.getChannelData(0);
+    for(var i=0;i<len;i++){
+      var env=Math.sin(i/len*Math.PI);
+      d[i]=(Math.random()*2-1)*env;
+    }
+    var src=ctx.createBufferSource();src.buffer=buf;
+    var filt=ctx.createBiquadFilter();
+    filt.type='bandpass';filt.frequency.value=800;filt.Q.value=5;
+    var g=ctx.createGain();g.gain.value=0.12;
+    src.connect(filt);filt.connect(g);g.connect(ctx.destination);
+    src.start(now);src.stop(now+dur);
+  }
+
+  // 女鬼尖叫
+  function playScream(ctx){
+    var now=ctx.currentTime;
+    var master=ctx.createGain();master.gain.value=1;master.connect(ctx.destination);
+    // 多层尖叫
+    function makeScream(sAt,dur,f0,f1,vol){
+      var len=ctx.sampleRate*dur;var buf=ctx.createBuffer(1,len,ctx.sampleRate);
+      var d=buf.getChannelData(0);
+      for(var i=0;i<len;i++){
+        var p=i/len;var freq=f0+(f1-f0)*p;
+        d[i]=(Math.sin(2*Math.PI*freq*i/ctx.sampleRate)*0.6+(Math.random()*2-1)*0.4)*Math.pow(1-p,0.3);
+      }
+      var src=ctx.createBufferSource();src.buffer=buf;
+      var g=ctx.createGain();
+      g.gain.setValueAtTime(0,now+sAt);
+      g.gain.linearRampToValueAtTime(vol,now+sAt+0.01);
+      g.gain.setValueAtTime(vol,now+sAt+dur*0.6);
+      g.gain.linearRampToValueAtTime(0,now+sAt+dur);
+      src.connect(g);g.connect(master);src.start(now+sAt);src.stop(now+sAt+dur);
+    }
+    makeScream(0,2.5,800,4500,0.7);
+    makeScream(0.05,2.0,1200,5500,0.5);
+    makeScream(0.1,1.8,2000,7000,0.4);
+    makeScream(0,1.5,400,2000,0.35);
+    // 低频轰鸣
+    function makeBoom(sAt){
+      var o=ctx.createOscillator();o.type='sawtooth';
+      o.frequency.setValueAtTime(90,now+sAt);
+      o.frequency.exponentialRampToValueAtTime(20,now+sAt+2);
+      var g=ctx.createGain();
+      g.gain.setValueAtTime(0,now+sAt);
+      g.gain.linearRampToValueAtTime(0.6,now+sAt+0.005);
+      g.gain.setValueAtTime(0.6,now+sAt+1.2);
+      g.gain.linearRampToValueAtTime(0,now+sAt+2.5);
+      o.connect(g);g.connect(master);o.start(now+sAt);o.stop(now+sAt+2.5);
+    }
+    makeBoom(0);makeBoom(0.3);makeBoom(0.7);
+    // 不和谐音群
+    [185,207,233,277,311,369,466,554].forEach(function(f,j){
+      var o=ctx.createOscillator();o.type='sine';o.frequency.value=f+Math.sin(j*7)*8;
+      var g=ctx.createGain();
+      g.gain.setValueAtTime(0,now);g.gain.linearRampToValueAtTime(0.12,now+0.03);
+      g.gain.setValueAtTime(0.12,now+2);g.gain.linearRampToValueAtTime(0,now+4);
+      o.connect(g);g.connect(master);o.start(now+j*0.015);o.stop(now+4);
+    });
+    // 白噪声
+    var nLen=ctx.sampleRate*4;var nBuf=ctx.createBuffer(2,nLen,ctx.sampleRate);
+    for(var ch=0;ch<2;ch++){
+      var nd=nBuf.getChannelData(ch);
+      for(var ni=0;ni<nLen;ni++)nd[ni]=(Math.random()*2-1)*(0.3+0.7*Math.pow(Math.sin(ni/ctx.sampleRate*Math.PI*2),2));
+    }
+    var nSrc=ctx.createBufferSource();nSrc.buffer=nBuf;
+    var nFilt=ctx.createBiquadFilter();nFilt.type='bandpass';nFilt.frequency.value=6000;nFilt.Q.value=3;
+    var nG=ctx.createGain();
+    nG.gain.setValueAtTime(0,now);nG.gain.linearRampToValueAtTime(0.25,now+0.02);
+    nG.gain.setValueAtTime(0.25,now+3);nG.gain.linearRampToValueAtTime(0,now+4);
+    nSrc.connect(nFilt);nFilt.connect(nG);nG.connect(master);nSrc.start(now);nSrc.stop(now+4);
+    // 尖刺脉冲
+    [0.5,0.7,1.0,1.1,1.5,2.0,2.05,2.8,3.5,3.52].forEach(function(st,s){
+      var o=ctx.createOscillator();o.type='square';o.frequency.value=80+s*20;
+      var g=ctx.createGain();
+      g.gain.setValueAtTime(0,now+st);g.gain.linearRampToValueAtTime(0.5,now+st+0.005);
+      g.gain.linearRampToValueAtTime(0,now+st+0.08);
+      o.connect(g);g.connect(master);o.start(now+st);o.stop(now+st+0.1);
+    });
+    // 倒放人声模拟
+    var rv=ctx.createOscillator();rv.type='sawtooth';
+    rv.frequency.setValueAtTime(150,now+1);rv.frequency.linearRampToValueAtTime(50,now+3.5);
+    var rg=ctx.createGain();
+    rg.gain.setValueAtTime(0,now+1);rg.gain.linearRampToValueAtTime(0.2,now+1.2);
+    rg.gain.setValueAtTime(0.2,now+3);rg.gain.linearRampToValueAtTime(0,now+3.8);
+    var rf=ctx.createBiquadFilter();rf.type='lowpass';rf.frequency.value=400;
+    rv.connect(rf);rf.connect(rg);rg.connect(master);rv.start(now+1);rv.stop(now+3.8);
+  }
+
+  // 二次惊吓音效(短促、更响)
+  function playSecondScare(ctx){
+    var now=ctx.currentTime;var m=ctx.createGain();m.gain.value=1;m.connect(ctx.destination);
+    // 超短尖叫
+    var len=ctx.sampleRate*0.8;var buf=ctx.createBuffer(1,len,ctx.sampleRate);
+    var d=buf.getChannelData(0);
+    for(var i=0;i<len;i++){
+      var p=i/len;var freq=1500+3000*p;
+      d[i]=(Math.sin(2*Math.PI*freq*i/ctx.sampleRate)*0.5+(Math.random()*2-1)*0.5)*(1-p*0.3);
+    }
+    var src=ctx.createBufferSource();src.buffer=buf;
+    var g=ctx.createGain();g.gain.setValueAtTime(0,now);
+    g.gain.linearRampToValueAtTime(1,now+0.005);g.gain.linearRampToValueAtTime(0,now+0.8);
+    src.connect(g);g.connect(m);src.start(now);src.stop(now+0.8);
+    // 低频冲击
+    var boom=ctx.createOscillator();boom.type='sawtooth';
+    boom.frequency.setValueAtTime(120,now);boom.frequency.exponentialRampToValueAtTime(15,now+0.5);
+    var bg=ctx.createGain();
+    bg.gain.setValueAtTime(0.8,now);bg.gain.linearRampToValueAtTime(0,now+0.6);
+    boom.connect(bg);bg.connect(m);boom.start(now);boom.stop(now+0.6);
+  }
+
+  /* ======================== Canvas 恐怖画面 ======================== */
+  var canvas,ctx2,animId;
+  var scareStartTime=0,bloodDrops=[],eyeDrips=[];
+  var glitchTimer=0,faceScale=1;
 
   // 预生成血滴
   for(var bi=0;bi<30;bi++){
     bloodDrops.push({
-      x: Math.sin(bi*73.1)*0.45+0.5,
-      y: Math.sin(bi*137.3)*0.3,
-      speed: 0.2 + Math.sin(bi*51.7)*0.15+0.15,
-      size: 2 + Math.sin(bi*93.2)*3+3,
-      alpha: 0.4 + Math.sin(bi*47.8)*0.3+0.3
+      x:Math.sin(bi*73.1)*0.45+0.5,y:Math.sin(bi*137.3)*0.3,
+      speed:0.2+Math.sin(bi*51.7)*0.15+0.15,
+      size:2+Math.sin(bi*93.2)*3+3,
+      alpha:0.4+Math.sin(bi*47.8)*0.3+0.3
     });
   }
-  // 预生成血泪
   for(var ei=0;ei<8;ei++){
     eyeDrips.push({
-      offset: (ei-3.5)*6,
-      length: 30+Math.sin(ei*67)*40+40,
-      width: 1.5+Math.sin(ei*41)*2+2,
-      speed: 2+Math.sin(ei*89)*2+2
+      offset:(ei-3.5)*6,length:30+Math.sin(ei*67)*40+40,
+      width:1.5+Math.sin(ei*41)*2+2,speed:2+Math.sin(ei*89)*2+2
     });
   }
 
-  function seededRand(seed){
-    var x = Math.sin(seed)*43758.5453;
-    return x - Math.floor(x);
-  }
+  function sRand(seed){var x=Math.sin(seed)*43758.5453;return x-Math.floor(x)}
 
-  function drawScaryFace(c, w, h, t){
-    // 黑色背景
-    c.fillStyle = '#000';
-    c.fillRect(0, 0, w, h);
+  // 血字文本
+  var bloodTexts=['不要回头...','你后面有人...','看看你的影子...','嘻嘻嘻...','我看到你了...'];
+  var currentBloodText='',bloodTextAlpha=0,bloodTextTimer=0;
 
-    // 随机全屏闪烁
-    if(Math.sin(t*37)>0.92){
-      c.fillStyle = 'rgba(255,255,255,0.1)';
+  function drawScaryFace(c,w,h,t){
+    c.fillStyle='#000';c.fillRect(0,0,w,h);
+
+    // ===== 假安全期(前2秒): 只显示微弱的诡异元素 =====
+    var isFakeSafe=t<2;
+    var safeRatio=isFakeSafe?t/2:1;
+
+    // 微弱红光脉冲(假安全期很微弱)
+    var pulseAlpha=isFakeSafe?0.02:0.2+Math.sin(t*6)*0.15;
+    c.fillStyle='rgba(150,0,0,'+pulseAlpha+')';c.fillRect(0,0,w,h);
+
+    // 随机全屏闪烁(假安全期几乎不闪)
+    var flickerChance=isFakeSafe?0.98:0.92;
+    if(Math.sin(t*37)>flickerChance){
+      c.fillStyle=isFakeSafe?'rgba(255,255,255,0.03)':'rgba(255,255,255,0.1)';
       c.fillRect(0,0,w,h);
     }
 
-    var cx = w/2, cy = h*0.38;
-    // 剧烈抖动
-    var shakeX = Math.sin(t*47)*6 + Math.sin(t*73)*3;
-    var shakeY = Math.cos(t*53)*4 + Math.sin(t*61)*3;
-    // glitch 偏移（偶尔大幅位移）
-    if(t - glitchTimer > 0.3 + Math.sin(t)*0.2){
-      glitchTimer = t;
-    }
-    var glitchOff = Math.max(0, 30 - (t-glitchTimer)*150);
-    var totalShakeX = shakeX + (glitchOff > 0 ? Math.sin(glitchTimer*100)*glitchOff : 0);
+    var cx=w/2,cy=h*0.38;
+    // 抖动(假安全期轻微抖动)
+    var shakeMul=isFakeSafe?0.3:1;
+    var shakeX=(Math.sin(t*47)*6+Math.sin(t*73)*3)*shakeMul;
+    var shakeY=(Math.cos(t*53)*4+Math.sin(t*61)*3)*shakeMul;
 
-    var sc = Math.min(w,h) / 480;
-    // 脸部微微前倾放大效果
-    faceScale = Math.min(faceScale + 0.003, 1.3);
-    var fs = sc * faceScale;
+    // Glitch偏移
+    if(t-glitchTimer>0.3+Math.sin(t)*0.2)glitchTimer=t;
+    var glitchOff=Math.max(0,30-(t-glitchTimer)*150);
+    var totalShakeX=shakeX+(glitchOff>0?Math.sin(glitchTimer*100)*glitchOff:0);
 
+    var sc=Math.min(w,h)/480;
+    faceScale=Math.min(faceScale+(isFakeSafe?0.001:0.003),1.3);
+    var fs=sc*faceScale;
+
+    c.save();c.translate(cx+totalShakeX,cy+shakeY);
+
+    // 暗绿环境光
+    var env=c.createRadialGradient(0,100*fs,50*fs,0,0,250*fs);
+    env.addColorStop(0,'rgba(0,40,20,'+((isFakeSafe?0.1:0.3)*safeRatio)+')');
+    env.addColorStop(1,'rgba(0,0,0,0)');
+    c.fillStyle=env;c.fillRect(-250*fs,-250*fs,500*fs,500*fs);
+
+    // 头发后层
     c.save();
-    c.translate(cx + totalShakeX, cy + shakeY);
-
-    // ===== 暗绿色环境光 =====
-    var envGlow = c.createRadialGradient(0, 100*fs, 50*fs, 0, 0, 250*fs);
-    envGlow.addColorStop(0, 'rgba(0,40,20,0.3)');
-    envGlow.addColorStop(1, 'rgba(0,0,0,0)');
-    c.fillStyle = envGlow;
-    c.fillRect(-250*fs, -250*fs, 500*fs, 500*fs);
-
-    // ===== 头发（后层，大面积覆盖）=====
-    c.save();
-    for(var hi2=0;hi2<80;hi2++){
-      var ha = -Math.PI*0.9 + (hi2/80)*Math.PI*1.8;
-      var hx = Math.cos(ha)*120*fs;
-      var hy = Math.sin(ha)*170*fs - 15*fs;
-      var r1 = seededRand(hi2*127.1+0.5);
-      var r2 = seededRand(hi2*269.5+0.5);
-      var r3 = seededRand(hi2*419.2+0.5);
-      var hEndX = hx + (r1-0.5)*100*fs;
-      var hEndY = hy + 50*fs + r2*120*fs;
-      c.beginPath();
-      c.moveTo(hx, hy);
-      c.bezierCurveTo(
-        hx+(r3-0.5)*50*fs, hy+(hEndY-hy)*0.3,
-        hEndX+(r1-0.3)*30*fs, hy+(hEndY-hy)*0.7,
-        hEndX, hEndY
-      );
-      c.strokeStyle = 'rgba(5,5,5,'+(0.6+r1*0.4)+')';
-      c.lineWidth = (3+r2*5)*fs;
-      c.stroke();
+    for(var hi=0;hi<80;hi++){
+      var ha=-Math.PI*0.9+(hi/80)*Math.PI*1.8;
+      var hx=Math.cos(ha)*120*fs,hy=Math.sin(ha)*170*fs-15*fs;
+      var r1=sRand(hi*127.1),r2=sRand(hi*269.5),r3=sRand(hi*419.2);
+      c.beginPath();c.moveTo(hx,hy);
+      c.bezierCurveTo(hx+(r3-0.5)*50*fs,hy+(r2*120*fs+50*fs)*0.3,hx+(r1-0.5)*100*fs+(r1-0.3)*30*fs,hy+(r2*120*fs+50*fs)*0.7,hx+(r1-0.5)*100*fs,hy+50*fs+r2*120*fs);
+      c.strokeStyle='rgba(5,5,5,'+(0.6+r1*0.4)+')';c.lineWidth=(3+r2*5)*fs;c.stroke();
     }
     c.restore();
 
-    // ===== 脸部 =====
-    c.beginPath();
-    c.ellipse(0, 0, 110*fs, 155*fs, 0, 0, Math.PI*2);
-    var faceGrad = c.createRadialGradient(0, -30*fs, 10*fs, 0, 10*fs, 160*fs);
-    faceGrad.addColorStop(0, '#c8baa0');
-    faceGrad.addColorStop(0.3, '#baa888');
-    faceGrad.addColorStop(0.7, '#9a8a6a');
-    faceGrad.addColorStop(1, '#5a4a30');
-    c.fillStyle = faceGrad;
-    c.fill();
+    // 脸
+    c.beginPath();c.ellipse(0,0,110*fs,155*fs,0,0,Math.PI*2);
+    var fg=c.createRadialGradient(0,-30*fs,10*fs,0,10*fs,160*fs);
+    fg.addColorStop(0,'#c8baa0');fg.addColorStop(0.3,'#baa888');fg.addColorStop(0.7,'#9a8a6a');fg.addColorStop(1,'#5a4a30');
+    c.fillStyle=fg;c.fill();
 
-    // 皮肤纹理/腐烂斑点
+    // 腐烂斑点
     for(var sp=0;sp<25;sp++){
-      var sx = seededRand(sp*31.7)*200*fs - 100*fs;
-      var sy = seededRand(sp*57.3)*300*fs - 150*fs;
-      var sr = (5+seededRand(sp*89.1)*15)*fs;
+      var sx=sRand(sp*31.7)*200*fs-100*fs,sy=sRand(sp*57.3)*300*fs-150*fs;
+      var sr=(5+sRand(sp*89.1)*15)*fs;
       if(sx*sx/(110*fs*110*fs)+sy*sy/(155*fs*155*fs)<1){
-        c.beginPath();
-        c.ellipse(sx, sy, sr, sr*0.7, seededRand(sp*13)*Math.PI, 0, Math.PI*2);
-        c.fillStyle = 'rgba(60,30,20,'+(0.1+seededRand(sp*71)*0.2)+')';
-        c.fill();
+        c.beginPath();c.ellipse(sx,sy,sr,sr*0.7,sRand(sp*13)*Math.PI,0,Math.PI*2);
+        c.fillStyle='rgba(60,30,20,'+(0.1+sRand(sp*71)*0.2)+')';c.fill();
       }
     }
+
+    // 黑眼圈
+    [[-1,-1],[1,-1]].forEach(function(side){
+      var ex=side[0]*40*fs,ey=side[1]*18*fs;
+      var dk=c.createRadialGradient(ex,ey+5*fs,2*fs,ex,ey+5*fs,30*fs);
+      dk.addColorStop(0,'rgba(30,10,30,0.5)');dk.addColorStop(1,'rgba(30,10,30,0)');
+      c.fillStyle=dk;c.fillRect(ex-30*fs,ey-20*fs,60*fs,50*fs);
+    });
 
     // 裂纹
-    c.strokeStyle = 'rgba(40,20,10,0.4)';
-    c.lineWidth = 1.5*fs;
+    c.strokeStyle='rgba(40,20,10,0.4)';c.lineWidth=1.5*fs;
     for(var cr=0;cr<8;cr++){
-      var crx = (seededRand(cr*101)-0.5)*160*fs;
-      var cry = (seededRand(cr*203)-0.5)*250*fs;
-      c.beginPath();
-      c.moveTo(crx, cry);
-      for(var cj=1;cj<=4;cj++){
-        c.lineTo(crx+(seededRand(cr*300+cj*50)-0.5)*40*fs, cry+cj*15*fs);
+      var crx=(sRand(cr*101)-0.5)*160*fs,cry=(sRand(cr*203)-0.5)*250*fs;
+      c.beginPath();c.moveTo(crx,cry);
+      for(var cj=1;cj<=4;cj++)c.lineTo(crx+(sRand(cr*300+cj*50)-0.5)*40*fs,cry+cj*15*fs);
+      c.stroke();
+    }
+
+    // 眼睛
+    [[-40,1],[40,0.9]].forEach(function(e){
+      var ex=e[0]*fs,ey=-18*fs;
+      // 眼眶(不完全对称)
+      c.beginPath();c.ellipse(ex,ey,35*fs,25*fs,e[0]<0?-0.05:0.05,0,Math.PI*2);
+      var sg=c.createRadialGradient(ex,ey,5*fs,ex,ey,35*fs);
+      sg.addColorStop(0,'#000');sg.addColorStop(0.6,'#1a0808');sg.addColorStop(1,'#3a2010');
+      c.fillStyle=sg;c.fill();
+      // 眼球
+      c.beginPath();c.ellipse(ex,ey,18*fs*e[1],14*fs,0,0,Math.PI*2);
+      var eg=c.createRadialGradient(ex,ey-2*fs,2*fs,ex,ey,18*fs);
+      eg.addColorStop(0,'#aaaa33');eg.addColorStop(0.5,'#887722');eg.addColorStop(1,'#443311');
+      c.fillStyle=eg;c.fill();
+      // 瞳孔
+      var ps=(3+Math.sin(t*15)*1.5)*fs;
+      c.beginPath();c.arc(ex,ey,ps,0,Math.PI*2);c.fillStyle='#000';c.fill();
+      // 红血丝
+      c.strokeStyle='rgba(180,0,0,0.6)';c.lineWidth=1*fs;
+      for(var bv=0;bv<12;bv++){
+        var ba=sRand(bv*77+(e[0]<0?0:50))*Math.PI*2;
+        c.beginPath();
+        c.moveTo(ex+Math.cos(ba)*14*fs,ey+Math.sin(ba)*10*fs);
+        c.lineTo(ex+Math.cos(ba)*(20+sRand(bv*33+(e[0]<0?0:50))*10)*fs,ey+Math.sin(ba)*(15+sRand(bv*55+(e[0]<0?0:50))*8)*fs);
+        c.stroke();
       }
-      c.stroke();
+    });
+
+    // 血泪
+    c.lineCap='round';
+    eyeDrips.forEach(function(drip,ed){
+      var dl=drip.length*fs+Math.sin(t*drip.speed)*20*fs;
+      [-40,40].forEach(function(ox){
+        c.beginPath();c.moveTo(ox*fs+drip.offset*fs,0);
+        c.quadraticCurveTo(ox*fs+drip.offset*fs+(sRand(ed*11+(ox<0?0:7))-0.5)*8*fs,dl*0.5,ox*fs+drip.offset*fs+sRand(ed*22+(ox<0?0:7))*5*fs,dl);
+        c.strokeStyle='rgba(160,0,0,0.5)';c.lineWidth=drip.width*fs;c.stroke();
+      });
+    });
+
+    // 鼻子
+    [[-8,1],[8,1]].forEach(function(n){
+      c.beginPath();c.ellipse(n[0]*fs,28*fs,6*fs*n[1],8*fs,0,0,Math.PI*2);c.fillStyle='#1a0505';c.fill();
+    });
+
+    // 嘴巴
+    var mo=50*fs+Math.sin(t*25)*8*fs;
+    c.beginPath();c.ellipse(0,65*fs,60*fs,mo,0,0,Math.PI*2);c.fillStyle='#050000';c.fill();
+    c.beginPath();c.ellipse(0,60*fs,50*fs,mo*0.7,0,0,Math.PI*2);
+    var mg=c.createRadialGradient(0,65*fs,5*fs,0,65*fs,mo);
+    mg.addColorStop(0,'#3a0000');mg.addColorStop(0.5,'#2a0000');mg.addColorStop(1,'#0a0000');
+    c.fillStyle=mg;c.fill();
+    // 牙齿(上下各10颗，大小不一)
+    for(var ti=0;ti<10;ti++){
+      var tx=-48*fs+ti*(96*fs/9);
+      // 上
+      var th=(12+sRand(ti*37)*18)*fs,tw=(5+sRand(ti*53)*4)*fs;
+      c.beginPath();c.moveTo(tx-tw,30*fs);c.lineTo(tx+tw,30*fs);c.lineTo(tx+tw*0.7,30*fs+th);c.lineTo(tx-tw*0.7,30*fs+th);
+      c.fillStyle=sRand(ti*19)>0.5?'#c8b89a':'#8a7a60';c.fill();
+      // 下
+      var th2=(10+sRand(ti*41+99)*14)*fs,tw2=(5+sRand(ti*67+99)*3)*fs;
+      c.beginPath();c.moveTo(tx-tw2,100*fs);c.lineTo(tx+tw2,100*fs);c.lineTo(tx+tw2*0.6,100*fs-th2);c.lineTo(tx-tw2*0.6,100*fs-th2);
+      c.fillStyle=sRand(ti*23+99)>0.5?'#b8a88a':'#7a6a50';c.fill();
     }
+    // 牙龈
+    c.beginPath();c.ellipse(0,30*fs,55*fs,8*fs,0,0,Math.PI);c.fillStyle='rgba(120,20,20,0.6)';c.fill();
+    c.beginPath();c.ellipse(0,100*fs,55*fs,8*fs,0,Math.PI,Math.PI*2);c.fillStyle='rgba(100,15,15,0.5)';c.fill();
 
-    // ===== 深陷眼眶 =====
-    // 左眼眶（深陷效果）
-    c.beginPath();
-    c.ellipse(-40*fs, -18*fs, 35*fs, 25*fs, -0.05, 0, Math.PI*2);
-    var socketGrad = c.createRadialGradient(-40*fs, -18*fs, 5*fs, -40*fs, -18*fs, 35*fs);
-    socketGrad.addColorStop(0, '#000000');
-    socketGrad.addColorStop(0.6, '#1a0808');
-    socketGrad.addColorStop(1, '#3a2010');
-    c.fillStyle = socketGrad;
-    c.fill();
-
-    // 左眼球 - 发黄
-    c.beginPath();
-    c.ellipse(-40*fs, -18*fs, 18*fs, 14*fs, 0, 0, Math.PI*2);
-    var eyeBallGrad = c.createRadialGradient(-40*fs, -20*fs, 2*fs, -40*fs, -18*fs, 18*fs);
-    eyeBallGrad.addColorStop(0, '#aaaa33');
-    eyeBallGrad.addColorStop(0.5, '#887722');
-    eyeBallGrad.addColorStop(1, '#443311');
-    c.fillStyle = eyeBallGrad;
-    c.fill();
-
-    // 左瞳孔 - 针尖大小（极度恐惧）
-    var pupilSize = (3 + Math.sin(t*15)*1.5)*fs;
-    c.beginPath();
-    c.arc(-40*fs, -18*fs, pupilSize, 0, Math.PI*2);
-    c.fillStyle = '#000';
-    c.fill();
-
-    // 左眼红血丝
-    c.strokeStyle = 'rgba(180,0,0,0.6)';
-    c.lineWidth = 1*fs;
-    for(var bv=0;bv<12;bv++){
-      var ba = seededRand(bv*77)*Math.PI*2;
-      c.beginPath();
-      c.moveTo(-40*fs+Math.cos(ba)*14*fs, -18*fs+Math.sin(ba)*10*fs);
-      c.lineTo(-40*fs+Math.cos(ba)*(20+seededRand(bv*33)*10)*fs, -18*fs+Math.sin(ba)*(15+seededRand(bv*55)*8)*fs);
-      c.stroke();
-    }
-
-    // 右眼眶
-    c.beginPath();
-    c.ellipse(40*fs, -18*fs, 35*fs, 25*fs, 0.05, 0, Math.PI*2);
-    var socketGrad2 = c.createRadialGradient(40*fs, -18*fs, 5*fs, 40*fs, -18*fs, 35*fs);
-    socketGrad2.addColorStop(0, '#000000');
-    socketGrad2.addColorStop(0.6, '#1a0808');
-    socketGrad2.addColorStop(1, '#3a2010');
-    c.fillStyle = socketGrad2;
-    c.fill();
-
-    // 右眼球
-    c.beginPath();
-    c.ellipse(40*fs, -18*fs, 18*fs, 14*fs, 0, 0, Math.PI*2);
-    var eyeBallGrad2 = c.createRadialGradient(40*fs, -20*fs, 2*fs, 40*fs, -18*fs, 18*fs);
-    eyeBallGrad2.addColorStop(0, '#aaaa33');
-    eyeBallGrad2.addColorStop(0.5, '#887722');
-    eyeBallGrad2.addColorStop(1, '#443311');
-    c.fillStyle = eyeBallGrad2;
-    c.fill();
-
-    // 右瞳孔
-    c.beginPath();
-    c.arc(40*fs, -18*fs, pupilSize, 0, Math.PI*2);
-    c.fillStyle = '#000';
-    c.fill();
-
-    // 右眼红血丝
-    c.strokeStyle = 'rgba(180,0,0,0.6)';
-    for(var bv2=0;bv2<12;bv2++){
-      var ba2 = seededRand(bv2*88+50)*Math.PI*2;
-      c.beginPath();
-      c.moveTo(40*fs+Math.cos(ba2)*14*fs, -18*fs+Math.sin(ba2)*10*fs);
-      c.lineTo(40*fs+Math.cos(ba2)*(20+seededRand(bv2*44+50)*10)*fs, -18*fs+Math.sin(ba2)*(15+seededRand(bv2*66+50)*8)*fs);
-      c.stroke();
-    }
-
-    // ===== 血泪 =====
-    c.lineCap = 'round';
-    for(var ed=0;ed<eyeDrips.length;ed++){
-      var drip = eyeDrips[ed];
-      var dripLen = drip.length*fs + Math.sin(t*drip.speed)*20*fs;
-      // 左眼血泪
-      c.beginPath();
-      c.moveTo(-40*fs+drip.offset*fs, 0);
-      c.quadraticCurveTo(
-        -40*fs+drip.offset*fs+(seededRand(ed*11)-0.5)*8*fs,
-        dripLen*0.5,
-        -40*fs+drip.offset*fs+seededRand(ed*22)*5*fs,
-        dripLen
-      );
-      c.strokeStyle = 'rgba(160,0,0,'+drip.alpha+')';
-      c.lineWidth = drip.width*fs;
-      c.stroke();
-      // 右眼血泪
-      c.beginPath();
-      c.moveTo(40*fs+drip.offset*fs, 0);
-      c.quadraticCurveTo(
-        40*fs+drip.offset*fs+(seededRand(ed*33+7)-0.5)*8*fs,
-        dripLen*0.5,
-        40*fs+drip.offset*fs+seededRand(ed*44+7)*5*fs,
-        dripLen
-      );
-      c.stroke();
-    }
-
-    // ===== 鼻子 - 两个黑洞 =====
-    c.beginPath();
-    c.ellipse(-8*fs, 28*fs, 6*fs, 8*fs, 0, 0, Math.PI*2);
-    c.fillStyle = '#1a0505';
-    c.fill();
-    c.beginPath();
-    c.ellipse(8*fs, 28*fs, 6*fs, 8*fs, 0, 0, Math.PI*2);
-    c.fillStyle = '#1a0505';
-    c.fill();
-
-    // ===== 嘴巴 - 极度张大 + 扭曲 =====
-    var mouthOpen = 50*fs + Math.sin(t*25)*8*fs;
-    c.beginPath();
-    c.ellipse(0, 65*fs, 60*fs, mouthOpen, 0, 0, Math.PI*2);
-    c.fillStyle = '#050000';
-    c.fill();
-
-    // 嘴内深红色
-    c.beginPath();
-    c.ellipse(0, 60*fs, 50*fs, mouthOpen*0.7, 0, 0, Math.PI*2);
-    var mouthGrad = c.createRadialGradient(0, 65*fs, 5*fs, 0, 65*fs, mouthOpen);
-    mouthGrad.addColorStop(0, '#3a0000');
-    mouthGrad.addColorStop(0.5, '#2a0000');
-    mouthGrad.addColorStop(1, '#0a0000');
-    c.fillStyle = mouthGrad;
-    c.fill();
-
-    // 上颚牙齿（不规则、尖利）
-    var teethCount = 10;
-    for(var ti=0;ti<teethCount;ti++){
-      var ttx = -48*fs + ti*(96*fs/(teethCount-1));
-      var tHeight = (12+seededRand(ti*37)*18)*fs;
-      var tWidth = (5+seededRand(ti*53)*4)*fs;
-      c.beginPath();
-      c.moveTo(ttx-tWidth, 30*fs);
-      c.lineTo(ttx+tWidth, 30*fs);
-      c.lineTo(ttx+tWidth*0.7, 30*fs+tHeight);
-      c.lineTo(ttx-tWidth*0.7, 30*fs+tHeight);
-      c.fillStyle = seededRand(ti*19)>0.5 ? '#c8b89a' : '#8a7a60';
-      c.fill();
-      c.strokeStyle = 'rgba(80,50,30,0.5)';
-      c.lineWidth = 0.5*fs;
-      c.stroke();
-    }
-
-    // 下颚牙齿
-    for(var ti2=0;ti2<teethCount;ti2++){
-      var ttx2 = -48*fs + ti2*(96*fs/(teethCount-1));
-      var tHeight2 = (10+seededRand(ti2*41+99)*14)*fs;
-      var tWidth2 = (5+seededRand(ti2*67+99)*3)*fs;
-      c.beginPath();
-      c.moveTo(ttx2-tWidth2, 100*fs);
-      c.lineTo(ttx2+tWidth2, 100*fs);
-      c.lineTo(ttx2+tWidth2*0.6, 100*fs-tHeight2);
-      c.lineTo(ttx2-tWidth2*0.6, 100*fs-tHeight2);
-      c.fillStyle = seededRand(ti2*23+99)>0.5 ? '#b8a88a' : '#7a6a50';
-      c.fill();
-    }
-
-    // 牙龈（红色）
-    c.beginPath();
-    c.ellipse(0, 30*fs, 55*fs, 8*fs, 0, 0, Math.PI);
-    c.fillStyle = 'rgba(120,20,20,0.6)';
-    c.fill();
-    c.beginPath();
-    c.ellipse(0, 100*fs, 55*fs, 8*fs, 0, Math.PI, Math.PI*2);
-    c.fillStyle = 'rgba(100,15,15,0.5)';
-    c.fill();
-
-    // ===== 头发前层 =====
-    c.save();
-    c.globalCompositeOperation = 'multiply';
+    // 头发前层
+    c.save();c.globalCompositeOperation='multiply';
     for(var hi3=0;hi3<50;hi3++){
-      var ha3 = -Math.PI + (hi3/50)*Math.PI*2;
-      if(ha3 > 0 && ha3 < Math.PI) continue; // 只画上半部分
-      var hx3 = Math.cos(ha3)*115*fs;
-      var hy3 = Math.sin(ha3)*160*fs - 10*fs;
-      var r13 = seededRand(hi3*127.1+99);
-      var r23 = seededRand(hi3*269.5+99);
-      var hEndX3 = hx3 + (r13-0.5)*70*fs;
-      var hEndY3 = hy3 + 30*fs + r23*60*fs;
-      c.beginPath();
-      c.moveTo(hx3, hy3);
-      c.quadraticCurveTo(hx3+(r23-0.5)*30*fs, (hy3+hEndY3)/2, hEndX3, hEndY3);
-      c.strokeStyle = 'rgba(8,8,8,'+(0.5+r13*0.5)+')';
-      c.lineWidth = (2+r23*6)*fs;
-      c.stroke();
+      var ha3=-Math.PI+(hi3/50)*Math.PI*2;
+      if(ha3>0&&ha3<Math.PI)continue;
+      var hx3=Math.cos(ha3)*115*fs,hy3=Math.sin(ha3)*160*fs-10*fs;
+      var r13=sRand(hi3*127.1+99),r23=sRand(hi3*269.5+99);
+      c.beginPath();c.moveTo(hx3,hy3);
+      c.quadraticCurveTo(hx3+(r23-0.5)*30*fs,(hy3+hy3+30*fs+r23*60*fs)/2,hx3+(r13-0.5)*70*fs,hy3+30*fs+r23*60*fs);
+      c.strokeStyle='rgba(8,8,8,'+(0.5+r13*0.5)+')';c.lineWidth=(2+r23*6)*fs;c.stroke();
     }
     c.restore();
+    c.restore();
 
-    c.restore(); // 结束脸部 translate
-
-    // ===== Glitch 效果（画面撕裂）=====
-    if(glitchOff > 5){
-      var imgData = c.getImageData(0, 0, w, h);
-      var glitchY = Math.floor(h*seededRand(Math.floor(t*10)));
-      var glitchH = Math.floor(10+seededRand(Math.floor(t*7))*40);
-      var shiftX = Math.floor((seededRand(Math.floor(t*13))-0.5)*60);
-      if(glitchY+glitchH < h){
-        var strip = c.getImageData(0, glitchY, w, glitchH);
-        c.putImageData(strip, shiftX, glitchY);
+    // ===== Glitch =====
+    if(glitchOff>5&&!isFakeSafe){
+      var imgData=c.getImageData(0,0,w,h);
+      var glitchY=Math.floor(h*sRand(Math.floor(t*10)));
+      var glitchH=Math.floor(10+sRand(Math.floor(t*7))*40);
+      var shiftX=Math.floor((sRand(Math.floor(t*13))-0.5)*60);
+      if(glitchY+glitchH<h){
+        var strip=c.getImageData(0,glitchY,w,glitchH);c.putImageData(strip,shiftX,glitchY);
       }
-      // RGB 分离
-      if(seededRand(Math.floor(t*17))>0.7){
-        c.globalCompositeOperation = 'screen';
-        c.globalAlpha = 0.15;
-        c.fillStyle = '#ff0000';
-        c.fillRect(-3,0,w,h);
-        c.fillStyle = '#00ffff';
-        c.fillRect(3,0,w,h);
-        c.globalAlpha = 1;
-        c.globalCompositeOperation = 'source-over';
+      if(sRand(Math.floor(t*17))>0.7){
+        c.globalCompositeOperation='screen';c.globalAlpha=0.15;
+        c.fillStyle='#ff0000';c.fillRect(-3,0,w,h);
+        c.fillStyle='#00ffff';c.fillRect(3,0,w,h);
+        c.globalAlpha=1;c.globalCompositeOperation='source-over';
       }
     }
 
-    // ===== 下落的血滴 =====
-    for(var di=0;di<bloodDrops.length;di++){
-      var drop = bloodDrops[di];
-      drop.y += drop.speed * 0.01;
-      if(drop.y > 1.2) drop.y = -0.1;
-      var dx = drop.x*w;
-      var dy = drop.y*h;
-      c.beginPath();
-      c.ellipse(dx, dy, drop.size*fs, drop.size*fs*2.5, 0, 0, Math.PI*2);
-      c.fillStyle = 'rgba(140,0,0,'+drop.alpha*0.5+')';
-      c.fill();
+    // ===== 碎裂效果(吓人阶段触发) =====
+    if(!isFakeSafe && t>2 && t<4){
+      drawShatter(c,w,h,t-2);
     }
 
-    // ===== 全屏红色脉冲 =====
-    var pulseAlpha = 0.2 + Math.sin(t*6)*0.15;
-    c.fillStyle = 'rgba(150,0,0,'+pulseAlpha+')';
-    c.fillRect(0,0,w,h);
-
-    // 偶尔全屏白闪
-    if(Math.sin(t*23)>0.97){
-      c.fillStyle = 'rgba(255,255,255,0.15)';
-      c.fillRect(0,0,w,h);
+    // 血滴(假安全期不显示)
+    if(!isFakeSafe){
+      bloodDrops.forEach(function(drop){
+        drop.y+=drop.speed*0.01;
+        if(drop.y>1.2)drop.y=-0.1;
+        c.beginPath();c.ellipse(drop.x*w,drop.y*h,drop.size*fs,drop.size*fs*2.5,0,0,Math.PI*2);
+        c.fillStyle='rgba(140,0,0,'+drop.alpha*0.5+')';c.fill();
+      });
     }
 
-    // ===== 暗角（更强烈）=====
-    var vigGrad = c.createRadialGradient(w/2,h*0.4, Math.min(w,h)*0.15, w/2,h*0.4, Math.max(w,h)*0.75);
-    vigGrad.addColorStop(0, 'rgba(0,0,0,0)');
-    vigGrad.addColorStop(0.5, 'rgba(0,0,0,0.3)');
-    vigGrad.addColorStop(1, 'rgba(0,0,0,0.85)');
-    c.fillStyle = vigGrad;
-    c.fillRect(0,0,w,h);
+    // ===== 闪烁人影(假安全期后随机出现) =====
+    if(!isFakeSafe&&sRand(Math.floor(t*3))>0.85){
+      drawShadowFigure(c,w,h,t);
+    }
 
-    // ===== 底部文字 =====
-    var textAlpha = 0.6 + Math.sin(t*8)*0.4;
-    c.font = (20*sc)+'px sans-serif';
-    c.textAlign = 'center';
-    c.fillStyle = 'rgba(200,0,0,'+textAlpha+')';
-    c.shadowColor = '#ff0000';
-    c.shadowBlur = 20;
-    c.fillText('不要回头...', w/2, h*0.85);
-    c.shadowBlur = 0;
+    // ===== 血字浮现 =====
+    if(!isFakeSafe&&t-bloodTextTimer>2.5){
+      bloodTextTimer=t;
+      currentBloodText=bloodTexts[Math.floor(sRand(Math.floor(t*100))*bloodTexts.length)];
+      bloodTextAlpha=0;
+    }
+    if(!isFakeSafe && currentBloodText){
+      bloodTextAlpha=Math.min(bloodTextAlpha+0.02,0.8);
+      var fadeOut=t-bloodTextTimer>2?Math.max(0,1-(t-bloodTextTimer-2)/0.5):1;
+      var ta=bloodTextAlpha*fadeOut;
+      if(ta>0){
+        c.save();
+        c.font='bold '+(24*sc)+'px sans-serif';
+        c.textAlign='center';
+        c.fillStyle='rgba(180,0,0,'+ta+')';
+        c.shadowColor='#ff0000';c.shadowBlur=20;
+        c.fillText(currentBloodText,w/2,h*0.15);
+        c.shadowBlur=0;c.restore();
+      }
+    }
+
+    // 暗角
+    var vig=c.createRadialGradient(w/2,h*0.4,Math.min(w,h)*0.15,w/2,h*0.4,Math.max(w,h)*0.75);
+    vig.addColorStop(0,'rgba(0,0,0,0)');vig.addColorStop(0.5,'rgba(0,0,0,'+(isFakeSafe?0.1:0.3)+')');vig.addColorStop(1,'rgba(0,0,0,'+(isFakeSafe?0.4:0.85)+')');
+    c.fillStyle=vig;c.fillRect(0,0,w,h);
+
+    // 假安全期特殊效果: 淡淡的绿光,让画面看起来"没那么可怕"
+    if(isFakeSafe){
+      c.fillStyle='rgba(0,0,0,'+(0.7-t*0.3)+')';c.fillRect(0,0,w,h);
+    }
   }
 
-  /* ========== 动画控制 ========== */
-  var flashInterval = null;
+  // 简笔人影轮廓
+  function drawShadowFigure(c,w,h,t){
+    var fx=sRand(Math.floor(t*7))*w;
+    var fy=h*0.3+sRand(Math.floor(t*11))*h*0.3;
+    var fs=(0.5+sRand(Math.floor(t*13))*0.5)*Math.min(w,h)/500;
+    var alpha=0.3+sRand(Math.floor(t*17))*0.4;
+    c.save();c.translate(fx,fy);c.globalAlpha=alpha;
+    c.strokeStyle='#fff';c.lineWidth=2;
+    // 头
+    c.beginPath();c.arc(0,-40*fs,12*fs,0,Math.PI*2);c.stroke();
+    // 身体
+    c.beginPath();c.moveTo(0,-28*fs);c.lineTo(0,20*fs);c.stroke();
+    // 手臂
+    c.beginPath();c.moveTo(-20*fs,-10*fs);c.lineTo(20*fs,-10*fs);c.stroke();
+    // 腿
+    c.beginPath();c.moveTo(0,20*fs);c.lineTo(-15*fs,50*fs);c.moveTo(0,20*fs);c.lineTo(15*fs,50*fs);c.stroke();
+    c.globalAlpha=1;c.restore();
+  }
+
+  /* ======================== 碎裂效果 ======================== */
+  function drawShatter(c,w,h,t){
+    var progress=Math.min((t-0)/1,1);
+    if(progress<=0)return;
+    // 从中心扩散的裂纹
+    var cx=w/2,cy=h/2;
+    var cracks=12;
+    c.strokeStyle='rgba(200,200,200,0.4)';c.lineWidth=2;
+    for(var i=0;i<cracks;i++){
+      var angle=(i/cracks)*Math.PI*2+sRand(i*7)*0.3;
+      var length=Math.min(w,h)*0.6*progress;
+      c.beginPath();c.moveTo(cx,cy);
+      var px=cx,py=cy;
+      for(var j=0;j<6;j++){
+        var seg=length/6;
+        px+=Math.cos(angle+sRand(i*100+j*50)*0.5-0.25)*seg;
+        py+=Math.sin(angle+sRand(i*100+j*50)*0.5-0.25)*seg;
+        c.lineTo(px,py);
+      }
+      c.stroke();
+      // 分支裂纹
+      if(j>2){
+        var bAngle=angle+sRand(i*200)*Math.PI*0.5;
+        var bLen=length*0.3*progress;
+        c.beginPath();c.moveTo(px,py);
+        c.lineTo(px+Math.cos(bAngle)*bLen,py+Math.sin(bAngle)*bLen);c.stroke();
+      }
+    }
+  }
+
+  /* ======================== 动画控制 ======================== */
+  var flashInterval=null;
+
+  function triggerScare(){
+    $('analyzingPage').classList.add('hidden');
+    setTimeout(function(){
+      $('analyzingPage').classList.add('gone');
+      $('scarePage').classList.add('show');
+      // 渐进式音效
+      var ctx=initAudio();
+      // 第1秒: 心跳声(从慢到快)
+      playHeartbeat(ctx,0,8,0.7);
+      // 第1.5秒: 门吱呀声
+      playCreak(ctx,1.5);
+      // 第2.5秒: 耳语
+      playWhisper(ctx,2.5,1.5);
+      // 第3秒: 主尖叫(假安全结束后)
+      playScream(ctx);
+      startScareAnimation();
+      // 7秒后淡出
+      setTimeout(function(){
+        clearInterval(flashInterval);
+        if(navigator.vibrate)navigator.vibrate(0);
+        $('scarePage').style.transition='opacity 1.5s';
+        $('scarePage').style.opacity='0';
+        setTimeout(function(){
+          cancelAnimationFrame(animId);
+          if(audioCtx&&audioCtx.state!=='closed')audioCtx.suspend().catch(function(){});
+          $('scarePage').style.transition='';
+          $('scarePage').style.display='';
+          $('scarePage').style.opacity='';
+          $('scarePage').classList.remove('show');
+          $('flashOverlay').style.opacity='0';
+          // 恢复表单
+          resetForm();
+          // 安排二次惊吓
+          scheduleSecondScare();
+        },1500);
+      },7000);
+    },500);
+  }
 
   function startScareAnimation(){
-    canvas = $('scareCanvas');
-    ctx2 = canvas.getContext('2d');
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-    faceScale = 1;
-    scareStartTime = performance.now() / 1000;
-    glitchTimer = 0;
+    canvas=$('scareCanvas');
+    ctx2=canvas.getContext('2d');
+    var dpr=window.devicePixelRatio||1;
+    canvas.width=window.innerWidth*dpr;
+    canvas.height=window.innerHeight*dpr;
+    ctx2.scale(dpr,dpr);
+    canvas.style.width=window.innerWidth+'px';
+    canvas.style.height=window.innerHeight+'px';
+    faceScale=1;scareStartTime=performance.now()/1000;glitchTimer=0;
 
     function animate(){
-      var t = performance.now() / 1000 - scareStartTime;
-      drawScaryFace(ctx2, canvas.width, canvas.height, t);
-      animId = requestAnimationFrame(animate);
+      var t=performance.now()/1000-scareStartTime;
+      var w=window.innerWidth,h=window.innerHeight;
+      if(canvas.width!==w*dpr||canvas.height!==h*dpr){
+        canvas.width=w*dpr;canvas.height=h*dpr;
+        ctx2.scale(dpr,dpr);
+        canvas.style.width=w+'px';canvas.style.height=h+'px';
+      }
+      drawScaryFace(ctx2,w,h,t);
+      animId=requestAnimationFrame(animate);
     }
     animate();
 
     // 随机闪烁
-    var flash = $('flashOverlay');
-    flashInterval = setInterval(function(){
-      flash.style.opacity = String(0.7+Math.random()*0.3);
-      flash.style.background = Math.random()>0.3 ? '#fff' : '#f00';
-      setTimeout(function(){flash.style.opacity='0'}, 20+Math.random()*40);
-    }, 80+Math.random()*150);
+    var flash=$('flashOverlay');
+    flashInterval=setInterval(function(){
+      flash.style.opacity=String(0.7+Math.random()*0.3);
+      flash.style.background=Math.random()>0.3?'#fff':'#f00';
+      setTimeout(function(){flash.style.opacity='0'},20+Math.random()*40);
+    },80+Math.random()*150);
 
-    // 持续震动
+    // 震动
     if(navigator.vibrate){
       navigator.vibrate([500,100,500,100,500,100,800,200,1000]);
     }
-
-    // 7秒后淡出
-    setTimeout(function(){
-      clearInterval(flashInterval);
-      if(navigator.vibrate) navigator.vibrate(0);
-      $('scarePage').style.transition = 'opacity 1.5s';
-      $('scarePage').style.opacity = '0';
-      setTimeout(function(){
-        cancelAnimationFrame(animId);
-        if(audioCtx && audioCtx.state!=='closed') audioCtx.suspend().catch(function(){});
-        $('scarePage').style.transition='';
-        $('scarePage').style.display='';
-        $('scarePage').style.opacity='';
-        $('scarePage').classList.remove('show');
-        $('flashOverlay').style.opacity='0';
-        $('formPage').classList.remove('hidden');
-        $('nameInput').value='';
-        $('phoneInput').value='';
-        $('birthdayInput').value='';
-        document.querySelectorAll('input[name="gender"]').forEach(function(r){r.checked=false});
-        isRunning=false;
-      },1500);
-    },7000);
   }
 
-  /* ========== 表单验证 ========== */
-  var isRunning = false;
+  /* ======================== 二次惊吓 ======================== */
+  function scheduleSecondScare(){
+    setTimeout(function(){
+      var sc=$('secondScare');
+      var cv=$('secondCanvas');
+      var c=cv.getContext('2d');
+      var dpr=window.devicePixelRatio||1;
+      cv.width=window.innerWidth*dpr;cv.height=window.innerHeight*dpr;
+      c.scale(dpr,dpr);
+      cv.style.width=window.innerWidth+'px';cv.style.height=window.innerHeight+'px';
 
-  function validateForm(){
-    if(!$('nameInput').value.trim()){showToast('请输入姓名');return false}
-    if(!document.querySelector('input[name="gender"]:checked')){showToast('请选择性别');return false}
-    if(!$('birthdayInput').value){showToast('请选择生日');return false}
-    if(!/^1\d{10}$/.test($('phoneInput').value.trim())){showToast('请输入正确的手机号');return false}
-    return true;
+      var w=window.innerWidth,h=window.innerHeight;
+      // 巨大的恐怖面部瞬间闪现
+      c.fillStyle='#000';c.fillRect(0,0,w,h);
+      // 画一个超大的眼睛特写
+      drawGiantEye(c,w,h);
+
+      sc.classList.add('show');
+      var ctx=initAudio();
+      playSecondScare(ctx);
+      if(navigator.vibrate)navigator.vibrate([200,50,200]);
+
+      // 闪烁效果
+      var flash2=$('flashOverlay');
+      flash2.style.opacity='0.8';flash2.style.background='#fff';
+      setTimeout(function(){flash2.style.opacity='0'},50);
+
+      // 1.5秒后消失
+      setTimeout(function(){
+        sc.style.transition='opacity 0.8s';sc.style.opacity='0';
+        setTimeout(function(){
+          sc.classList.remove('show');sc.style.transition='';sc.style.opacity='';
+          isRunning=false;
+          if(audioCtx&&audioCtx.state!=='closed')audioCtx.suspend().catch(function(){});
+          if(navigator.vibrate)navigator.vibrate(0);
+        },800);
+      },1500);
+    },2500);
+  }
+
+  // 巨大眼睛特写(二次惊吓用)
+  function drawGiantEye(c,w,h){
+    var cx=w/2,cy=h/2,er=Math.max(w,h)*0.35;
+    // 眼白
+    c.beginPath();c.ellipse(cx,cy,er,er*0.65,0,0,Math.PI*2);
+    var eg=c.createRadialGradient(cx,cy,er*0.1,cx,cy,er);
+    eg.addColorStop(0,'#ccccaa');eg.addColorStop(0.7,'#887755');eg.addColorStop(1,'#443322');
+    c.fillStyle=eg;c.fill();
+    // 虹膜
+    var ir=er*0.45;
+    c.beginPath();c.arc(cx,cy,ir,0,Math.PI*2);
+    var ig=c.createRadialGradient(cx,cy,ir*0.1,cx,cy,ir);
+    ig.addColorStop(0,'#888822');ig.addColorStop(0.5,'#665511');ig.addColorStop(1,'#332200');
+    c.fillStyle=ig;c.fill();
+    // 瞳孔(针尖大)
+    c.beginPath();c.arc(cx,cy,ir*0.15,0,Math.PI*2);c.fillStyle='#000';c.fill();
+    // 血丝
+    c.strokeStyle='rgba(200,0,0,0.5)';c.lineWidth=2;
+    for(var i=0;i<30;i++){
+      var a=sRand(i*77)*Math.PI*2;
+      var len=er*0.7+sRand(i*33)*er*0.3;
+      c.beginPath();
+      c.moveTo(cx+Math.cos(a)*ir,cy+Math.sin(a)*ir*0.65);
+      var mx=cx+Math.cos(a+sRand(i*55)*0.2-0.1)*len*0.6;
+      var my=cy+Math.sin(a+sRand(i*55)*0.2-0.1)*len*0.6*0.65;
+      c.quadraticCurveTo(mx,my,cx+Math.cos(a)*len,cy+Math.sin(a)*len*0.65);
+      c.stroke();
+    }
+    // 红色脉冲覆盖
+    c.fillStyle='rgba(150,0,0,0.25)';c.fillRect(0,0,w*2,h*2);
+  }
+
+  /* ======================== 工具函数 ======================== */
+  function resetForm(){
+    $('formPage').classList.remove('gone','hidden');
+    $('analyzingPage').classList.remove('show');
+    $('analyzingPage').classList.add('gone','hidden');
+    $('nameInput').value='';$('phoneInput').value='';$('birthdayInput').value='';
+    document.querySelectorAll('input[name="gender"]').forEach(function(r){r.checked=false});
+    document.querySelectorAll('.tag-item').forEach(function(t){t.classList.remove('selected')});
+    document.querySelectorAll('.time-item').forEach(function(t){t.classList.remove('selected')});
+    selectedTime='';selectedTags=[];
+    // 重置分析页进度
+    $('ringFg').style.strokeDashoffset='339.29';
+    $('analyzePercent').textContent='0%';
+    $('analyzeText').textContent='正在连接灵魂数据库...';
+    goStep(1);
   }
 
   function showToast(msg){
     var old=document.querySelector('.toast-msg');if(old)old.remove();
-    var t=document.createElement('div');
-    t.className='toast-msg';
-    t.textContent=msg;
-    t.style.cssText='position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,.8);color:#fff;padding:12px 28px;border-radius:10px;font-size:15px;z-index:200;pointer-events:none;animation:toastFade 2s forwards';
-    document.body.appendChild(t);
-    setTimeout(function(){t.remove()},2000);
+    var t=document.createElement('div');t.className='toast-msg';t.textContent=msg;
+    t.style.cssText='position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,.8);color:#fff;padding:12px 28px;border-radius:10px;font-size:15px;z-index:300;pointer-events:none;animation:toastFade 2s forwards';
+    document.body.appendChild(t);setTimeout(function(){t.remove()},2000);
   }
 
-  var toastStyle=document.createElement('style');
-  toastStyle.textContent='@keyframes toastFade{0%{opacity:0;transform:translate(-50%,-50%) scale(.8)}10%{opacity:1;transform:translate(-50%,-50%) scale(1)}80%{opacity:1}100%{opacity:0}}';
-  document.head.appendChild(toastStyle);
-
-  /* ========== 提交 ========== */
-  $('submitBtn').addEventListener('click',function(){
-    if(isRunning) return;
-    if(!validateForm()) return;
-    isRunning=true;
-    $('loadingOverlay').classList.add('show');
-    setTimeout(function(){
-      $('loadingOverlay').classList.remove('show');
-      $('formPage').classList.add('hidden');
-      $('scarePage').classList.add('show');
-      playScream();
-      startScareAnimation();
-    },1200);
-  });
-
   window.addEventListener('beforeunload',function(e){e.preventDefault();e.returnValue=''});
-  window.addEventListener('resize',function(){if(canvas){canvas.width=window.innerWidth;canvas.height=window.innerHeight}});
+  window.addEventListener('resize',function(){
+    if(canvas&&$('scarePage').classList.contains('show')){
+      var dpr=window.devicePixelRatio||1;
+      canvas.width=window.innerWidth*dpr;canvas.height=window.innerHeight*dpr;
+      ctx2.scale(dpr,dpr);
+      canvas.style.width=window.innerWidth+'px';canvas.style.height=window.innerHeight+'px';
+    }
+  });
+  updateProgress();
 })();
 </script>
 </body>
