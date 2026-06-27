@@ -3,6 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#667eea">
+<meta name="description" content="灵魂性格解码 - 一个整蛊小游戏。填写表单经历多步流程后呈现由 Canvas+Web Audio 实时合成的戏剧性视觉体验。纯前端、零上传。">
+<meta property="og:title" content="灵魂性格解码">
+<meta property="og:description" content="一款纯前端整蛊小游戏。包含照片级 Canvas 画幅 + 实时合成音效。仅供娱乐,不上传任何信息。">
+<meta property="og:type" content="website">
+<meta name="robots" content="noindex,nofollow">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Cache-Control" content="no-cache,no-store,must-revalidate">
 <title>灵魂性格解码</title>
@@ -19,6 +25,48 @@
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{width:100%;height:100%;overflow:hidden;font-family:var(--font)}
 body{-webkit-overflow-scrolling:touch;overscroll-behavior:none}
+
+/* ===== 减弱动效模式(系统级尊重) ===== */
+@media (prefers-reduced-motion: reduce){
+  .page,#scarePage,#secondScare,.animate,.btn,.step{transition:none!important;animation:none!important}
+  #bloodBorder{animation:none!important;border-color:rgba(120,0,0,.4)!important}
+  .scanlines{display:none!important}
+  #flashOverlay{transition:opacity .8s!important}
+  .foot-tap{transition:none!important}
+}
+
+/* ===== 控制条(静音+退出) ===== */
+.control-bar{position:fixed;top:0;left:0;width:100%;display:flex;justify-content:flex-end;gap:8px;padding:12px;z-index:9999;pointer-events:none;isolation:isolate}
+.foot-tap{
+  pointer-events:auto;
+  width:42px;height:42px;border-radius:50%;
+  background:rgba(0,0,0,.45);color:#fff;font-size:18px;
+  display:flex;align-items:center;justify-content:center;
+  border:1px solid rgba(255,255,255,.2);
+  cursor:pointer;user-select:none;
+  opacity:0;transition:opacity .4s;
+  backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);
+  font-family:var(--font);
+}
+.control-bar.show .foot-tap{opacity:1}
+.foot-tap:active{transform:scale(.92)}
+.foot-tap.disabled{opacity:0!important;pointer-events:none}
+.control-bar.scare-mode .foot-tap{background:rgba(255,255,255,.15);border-color:rgba(255,255,255,.3)}
+
+/* ===== 同意复选框 ===== */
+.consent-row{display:flex;align-items:flex-start;gap:8px;margin:8px 0 4px;padding:10px;background:#f7f7fb;border-radius:8px;font-size:12px;line-height:1.5;color:var(--text-light)}
+.consent-row input{margin-top:2px;flex-shrink:0;width:auto;height:auto}
+.consent-row a{color:var(--primary);text-decoration:none}
+.privacy-link{font-size:11px;color:var(--text-muted);text-align:center;margin-top:8px;display:block}
+
+/* 隐私弹层 */
+.privacy-mask{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.55);z-index:5000;display:flex;align-items:center;justify-content:center;padding:20px}
+.privacy-card{background:#fff;border-radius:14px;padding:22px;max-width:360px;width:100%;max-height:80%;overflow:auto;font-size:13px;line-height:1.7;color:#444}
+.privacy-card h3{font-size:16px;margin-bottom:10px;color:#222}
+.privacy-card h4{font-size:13px;margin:12px 0 4px;color:#666;font-weight:600}
+.privacy-card ul{margin:0 0 8px 16px}
+.privacy-card .actions{display:flex;gap:10px;margin-top:16px}
+.privacy-card .actions button{flex:1}
 
 /* ===== 共享 ===== */
 .page{position:fixed;top:0;left:0;width:100%;height:100%;transition:opacity .4s}
@@ -99,7 +147,7 @@ body{-webkit-overflow-scrolling:touch;overscroll-behavior:none}
 }
 .analyze-ring svg{width:100%;height:100%;transform:rotate(-90deg)}
 .analyze-ring .bg{stroke:rgba(255,255,255,.08);fill:none;stroke-width:4}
-.analyze-ring .fg{stroke:var(--accent);fill:none;stroke-width:4;stroke-linecap:round;stroke-dasharray:339.29;stroke-dashoffset:339.29;transition:stroke-dashoffset .3s}
+.analyze-ring .fg{stroke:var(--accent);fill:none;stroke-width:4;stroke-linecap:round;stroke-dasharray:339.29;stroke-dashoffset:339.29}
 .analyze-percent{
   position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
   color:#fff;font-size:32px;font-weight:700;
@@ -112,16 +160,17 @@ body{-webkit-overflow-scrolling:touch;overscroll-behavior:none}
 #scarePage{display:none;position:fixed;top:0;left:0;width:100%;height:100%;z-index:100;background:#000}
 #scarePage.show{display:block}
 #scareCanvas{width:100%;height:100%;position:absolute;top:0;left:0}
-#flashOverlay{position:absolute;top:0;left:0;width:100%;height:100%;background:#fff;opacity:0;pointer-events:none;z-index:101;transition:opacity 0.03s}
-#bloodBorder{position:absolute;top:0;left:0;width:100%;height:100%;border:8px solid transparent;z-index:104;pointer-events:none;animation:bloodPulse .2s infinite}
+#flashOverlay{position:absolute;top:0;left:0;width:100%;height:100%;background:#fff;opacity:0;pointer-events:none;z-index:101;transition:opacity 0.08s}
+#bloodBorder{position:absolute;top:0;left:0;width:100%;height:100%;border:8px solid transparent;z-index:104;pointer-events:none;animation:bloodPulse .8s infinite}
 @keyframes bloodPulse{
   0%,100%{border-color:transparent;box-shadow:inset 0 0 40px rgba(255,0,0,0)}
-  50%{border-color:#aa0000;box-shadow:inset 0 0 120px rgba(255,0,0,.6)}
+  50%{border-color:#aa0000;box-shadow:inset 0 0 120px rgba(255,0,0,.5)}
 }
 .scanlines{
   position:absolute;top:0;left:0;width:100%;height:100%;
   background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.15) 2px,rgba(0,0,0,.15) 4px);
-  pointer-events:none;z-index:105;animation:scanMove .08s linear infinite;
+  pointer-events:none;z-index:102;animation:scanMove .1s linear infinite;
+  mix-blend-mode:multiply;
 }
 @keyframes scanMove{from{background-position:0 0}to{background-position:0 4px}}
 
@@ -129,6 +178,14 @@ body{-webkit-overflow-scrolling:touch;overscroll-behavior:none}
 #secondScare{display:none;position:fixed;top:0;left:0;width:100%;height:100%;z-index:200}
 #secondScare.show{display:block}
 #secondCanvas{width:100%;height:100%}
+
+/* ===== 正常场面(反差开场) ===== */
+#normalScene{display:none;position:fixed;top:0;left:0;width:100%;height:100%;z-index:90;background:radial-gradient(ellipse at 50% 40%,#3a2c20 0%,#18110b 70%,#000 100%);overflow:hidden;transform-origin:center center}
+#normalScene.show{display:block}
+#normalCanvas{width:100%;height:100%}
+.normal-vignette{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;background:radial-gradient(ellipse at 50% 50%,transparent 30%,rgba(0,0,0,.55) 100%);z-index:91}
+.zoom-flash{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:92;display:flex;align-items:center;justify-content:center}
+.zoom-flash div{width:50px;height:50px;border-radius:50%;background:#fff;opacity:0;box-shadow:0 0 200px 100px rgba(255,255,255,.85)}
 
 /* 吐司提示 */
 @keyframes toastFade{
@@ -139,6 +196,41 @@ body{-webkit-overflow-scrolling:touch;overscroll-behavior:none}
 </style>
 </head>
 <body>
+
+<!-- ===== 控制条(静音 + 退出): 表单页始终可见, 恐怖页前3秒禁用 ===== -->
+<div id="controlBar" class="control-bar show">
+  <button class="foot-tap" id="soundBtn" title="切换音效(静音)" aria-label="切换音效">🔊</button>
+  <button class="foot-tap disabled" id="exitBtn" title="终止当前动画并退出" aria-label="退出">✕</button>
+</div>
+
+<!-- ===== 隐私条款首次进入显示 ===== -->
+<div class="privacy-mask" id="privacyMask" style="display:none">
+  <div class="privacy-card">
+    <h3>🔮 灵魂性格解码 · 使用须知</h3>
+    <p style="margin-bottom:10px">本页面是一款仅供<strong>娱乐</strong>的整蛊小游戏,不涉及任何命理推断和真实解读。开始前请先了解:</p>
+    <h4>1. 信息处理</h4>
+    <ul>
+      <li>表单填写的信息<strong>仅在本机浏览器处理</strong>,不会上传、不存储、不发送给任何服务器。</li>
+      <li>手机号字段仅用于生成"命盘样式"的随机结果,网页关闭即丢失。</li>
+    </ul>
+    <h4>2. 健康提示</h4>
+    <ul>
+      <li>页面包含<strong>强烈闪烁、声音冲击、振动</strong>等效果。</li>
+      <li>光敏感癫痫患者、心脏疾病患者、孕妇请勿使用。</li>
+      <li>儿童需在监护人陪同下使用。</li>
+    </ul>
+    <h4>3. 你的控制权</h4>
+    <ul>
+      <li>右上角 <strong>🔊 静音</strong> 可一键关闭所有音效。</li>
+      <li>页面运行期间, <strong>3 秒后可点击 ✕ 主动退出</strong> ,随时中断。</li>
+    </ul>
+    <p style="margin-top:14px;color:#888;font-size:12px">点击下方按钮即表示你已知晓以上内容,你只对自己使用本页面产生的结果负责。</p>
+    <div class="actions">
+      <button class="btn btn-prev" id="privacyReject">离开</button>
+      <button class="btn btn-next" id="privacyAccept">知道了,开始 🔮</button>
+    </div>
+  </div>
+</div>
 
 <!-- ===== 表单页 ===== -->
 <div id="formPage" class="page">
@@ -207,8 +299,12 @@ body{-webkit-overflow-scrolling:touch;overscroll-behavior:none}
 
     <!-- Step 4: 手机号 -->
     <div class="step" data-step="4">
-      <div class="field"><label>📱 手机号（生成专属命盘）</label><input type="tel" id="phoneInput" placeholder="请输入手机号" maxlength="11" autocomplete="off"></div>
-      <div style="text-align:center;padding:16px 0 4px;font-size:36px">🌟</div>
+      <div class="field"><label>📱 手机号(仅用于生成属相命盘)</label><input type="tel" id="phoneInput" placeholder="请输入手机号" maxlength="11" autocomplete="off"></div>
+      <label class="consent-row" for="consentCheck">
+        <input type="checkbox" id="consentCheck">
+        <span>我已阅读并同意本页仅供娱乐、效果激烈等<strong>使用须知</strong>。信息仅在本地浏览器处理、不上传任何服务器。</span>
+      </label>
+      <div style="text-align:center;padding:12px 0 4px;font-size:36px">🌟</div>
       <p style="text-align:center;color:var(--text-light);font-size:13px;line-height:1.8">
         所有信息已准备就绪<br>点击下方按钮揭晓你的灵魂密码
       </p>
@@ -216,7 +312,7 @@ body{-webkit-overflow-scrolling:touch;overscroll-behavior:none}
     </div>
 
   </div>
-  <div class="form-subtitle">纯属娱乐 · 结果仅供消遣</div>
+  <div class="form-subtitle">纯属娱乐 · 结果仅供消遣 · <a href="#" id="showPrivacy" style="color:rgba(255,255,255,.85);text-decoration:underline">查看使用须知</a></div>
 </div>
 
 <!-- ===== 分析页 ===== -->
@@ -237,25 +333,146 @@ body{-webkit-overflow-scrolling:touch;overscroll-behavior:none}
   <div class="scanlines"></div>
 </div>
 
+<!-- ===== 正常场面(反差开场) ===== -->
+<div id="normalScene">
+  <canvas id="normalCanvas"></canvas>
+  <div class="normal-vignette"></div>
+  <div class="zoom-flash"><div></div></div>
+</div>
+
 <!-- ===== 二次惊吓 ===== -->
 <div id="secondScare"><canvas id="secondCanvas"></canvas></div>
 
 <script>
 (function(){
   function $(id){return document.getElementById(id)}
-  document.body.addEventListener('touchmove',function(e){e.preventDefault()},{passive:false});
+  // 按需阻止 touch:只在恐怖/正常/分析页等全屏 canvas 区域禁用滚动
+  document.getElementById('scarePage').addEventListener('touchmove',function(e){
+    e.preventDefault();
+  },{passive:false});
+  document.getElementById('normalScene').addEventListener('touchmove',function(e){
+    e.preventDefault();
+  },{passive:false});
+  // 表单区域允许原生控件正常交互(input/select/日期选择器)
+  document.getElementById('formPage').addEventListener('touchmove',function(e){
+    var t=e.target;
+    if(t&&(t.tagName==='INPUT'||t.tagName==='SELECT'||t.tagName==='TEXTAREA'||t.closest('.step')))return;
+    e.preventDefault();
+  },{passive:false});
+
+  /* ======================== 全局配置 ======================== */
+  // 检测系统级"减少动效"偏好(可访问性优先)
+  var reduceMotion = window.matchMedia &&
+    window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // 用户偏好: 是否静音
+  var muted = false;
+  // 整体动画倍率(减弱动效时降到 0.5)
+  var motionScale = reduceMotion ? 0.5 : 1;
+  // 音强倍率(减弱动效时降到 0.6,避免惊吓过度)
+  var audioScale = reduceMotion ? 0.6 : 1;
+
+  /* ======================== 隐私弹层 & 控制条 ======================== */
+  var privacyMask = $('privacyMask');
+  // 首次进入显示隐私弹层(除非已经接受过)
+  try {
+    if (!sessionStorage.getItem('prank_privacy_ack')) {
+      privacyMask.style.display = 'flex';
+    }
+  } catch (e) {
+    privacyMask.style.display = 'flex';
+  }
+  $('privacyAccept').addEventListener('click', function () {
+    try { sessionStorage.setItem('prank_privacy_ack', '1'); } catch (e) {}
+    privacyMask.style.display = 'none';
+  });
+  $('privacyReject').addEventListener('click', function () {
+    if (history.length > 1) history.back();
+    else window.close();
+    // 兜底:显示引导
+    document.body.innerHTML =
+      '<div style="display:flex;align-items:center;justify-content:center;height:100%;background:#111;color:#aaa;font-family:sans-serif;text-align:center;padding:20px">已退出,请关闭此页面。</div>';
+  });
+  $('showPrivacy').addEventListener('click', function (e) {
+    e.preventDefault(); privacyMask.style.display = 'flex';
+  });
+
+  // 控制条: 静音
+  var soundBtn = $('soundBtn'), exitBtn = $('exitBtn'), controlBar = $('controlBar');
+  soundBtn.addEventListener('click', function () {
+    muted = !muted;
+    soundBtn.textContent = muted ? '🔇' : '🔊';
+    soundBtn.title = muted ? '已静音,点击恢复' : '切换音效(静音)';
+    if (muted && audioCtx && audioCtx.state !== 'closed') {
+      try { audioCtx.suspend(); } catch (e) {}
+    } else if (audioCtx && audioCtx.state === 'suspended') {
+      audioCtx.resume().catch(function () {});
+    }
+  });
+
+  // 退出按钮启用/禁用切换(在不同阶段控制可点性)
+  function setExitEnabled(enabled, delay){
+    if(enabled){
+      if(delay>0) setTimeout(function(){ exitBtn.classList.remove('disabled'); }, delay);
+      else exitBtn.classList.remove('disabled');
+    } else {
+      exitBtn.classList.add('disabled');
+    }
+  }
+  // 清场:停止所有动画/音频/震动/UI 状态
+  function endScareAll(){
+    isRunning=false;
+    if(flashInterval){clearInterval(flashInterval);flashInterval=null;}
+    if(typeof animId!=='undefined'&&animId){cancelAnimationFrame(animId);animId=null;}
+    if(typeof normalAnimId!=='undefined'&&normalAnimId){cancelAnimationFrame(normalAnimId);normalAnimId=null;}
+    if(audioCtx&&audioCtx.state!=='closed') audioCtx.suspend().catch(function(){});
+    if(navigator.vibrate) navigator.vibrate(0);
+    var sp=$('scarePage'),ss=$('secondScare'),sn=$('normalScene'),fo=$('flashOverlay');
+    if(sp){sp.classList.remove('show');sp.style.display='none';sp.style.opacity='';}
+    if(ss){ss.classList.remove('show');ss.style.opacity='';}
+    if(sn){sn.classList.remove('show');sn.style.opacity='';sn.style.transform='';}
+    if(fo) fo.style.opacity='0';
+    controlBar.classList.remove('scare-mode');
+    setExitEnabled(false);
+  }
+
+  // 全局退出函数
+  window.__prankExit = function () {
+    endScareAll();
+    resetForm();
+  };
+  exitBtn.addEventListener('click', function () {
+    if (exitBtn.classList.contains('disabled')) return;
+    showToast('已退出');
+    setTimeout(window.__prankExit, 50);
+  });
+
+  // 页面不可见时暂停(电池友好)
+  document.addEventListener('visibilitychange', function () {
+    if (document.visibilityState !== 'visible') {
+      if (audioCtx && audioCtx.state === 'running') audioCtx.suspend().catch(function () {});
+      if (typeof animId !== 'undefined' && animId) cancelAnimationFrame(animId);
+    } else {
+      if (audioCtx && audioCtx.state === 'suspended' && !muted) audioCtx.resume().catch(function () {});
+    }
+  });
 
   /* ======================== 表单逻辑 ======================== */
   var currentStep=1,totalSteps=4;
-  var selectedTime='',selectedTags=[];
+  var selectedTime='',selectedTags=[],selectedGender='',selectedName='';
   var isRunning=false;
+
+  // 缓存:避免每次 goStep 重复查询 DOM
+  var stepNodes=Array.prototype.slice.call(document.querySelectorAll('.step'));
+  var timeNodes=Array.prototype.slice.call(document.querySelectorAll('#timeGrid .time-item'));
+  var tagNodes=Array.prototype.slice.call(document.querySelectorAll('#tagGrid .tag-item'));
 
   function updateProgress(){
     $('progressFill').style.width=((currentStep-1)/totalSteps*100)+'%';
     $('stepLabel').textContent='第 '+currentStep+' 步 / 共 '+totalSteps+' 步';
   }
   function goStep(n){
-    document.querySelectorAll('.step').forEach(function(s){s.classList.remove('active')});
+    for(var si=0;si<stepNodes.length;si++) stepNodes[si].classList.remove('active');
     var target=document.querySelector('[data-step="'+n+'"]');
     if(target)target.classList.add('active');
     currentStep=n;updateProgress();
@@ -263,7 +480,7 @@ body{-webkit-overflow-scrolling:touch;overscroll-behavior:none}
   // 时间选择
   $('timeGrid').addEventListener('click',function(e){
     var item=e.target.closest('.time-item');if(!item)return;
-    document.querySelectorAll('#timeGrid .time-item').forEach(function(t){t.classList.remove('selected')});
+    for(var ti=0;ti<timeNodes.length;ti++) timeNodes[ti].classList.remove('selected');
     item.classList.add('selected');selectedTime=item.dataset.val;
   });
   // 标签选择(最多3个)
@@ -278,6 +495,13 @@ body{-webkit-overflow-scrolling:touch;overscroll-behavior:none}
       item.classList.add('selected');selectedTags.push(tag);
     }
   });
+  // 实时同步:姓名输入存内存
+  $('nameInput').addEventListener('input',function(e){selectedName=e.target.value;});
+  // 直接监听 radio change(替代 querySelector(':checked'))
+  document.querySelectorAll('input[name="gender"]').forEach(function(r){
+    r.addEventListener('change',function(){selectedGender=r.value;});
+  });
+
   // 步骤按钮
   $('next1').addEventListener('click',function(){
     if(!$('birthdayInput').value){showToast('请选择生日');return}
@@ -291,7 +515,7 @@ body{-webkit-overflow-scrolling:touch;overscroll-behavior:none}
   });
   $('prev3').addEventListener('click',function(){goStep(2)});
   $('next3').addEventListener('click',function(){
-    if(!document.querySelector('input[name="gender"]:checked')){showToast('请选择性别');return}
+    if(!selectedGender){showToast('请选择性别');return}
     if(!$('nameInput').value.trim()){showToast('请输入姓名');return}
     goStep(4);
   });
@@ -300,6 +524,7 @@ body{-webkit-overflow-scrolling:touch;overscroll-behavior:none}
   $('submitBtn').addEventListener('click',function(){
     if(isRunning)return;
     if(!/^1\d{10}$/.test($('phoneInput').value.trim())){showToast('请输入正确的手机号');return}
+    if(!$('consentCheck').checked){showToast('请先勾选并同意使用须知');return}
     isRunning=true;
     startAnalyzing();
   });
@@ -344,8 +569,9 @@ body{-webkit-overflow-scrolling:touch;overscroll-behavior:none}
   /* ======================== 音效系统 ======================== */
   var audioCtx=null;
   function initAudio(){
+    if(muted)return null;
     if(!audioCtx)audioCtx=new(window.AudioContext||window.webkitAudioContext)();
-    if(audioCtx.state==='suspended')audioCtx.resume();
+    // 不在这里 resume,留给用户首次手势触发
     return audioCtx;
   }
 
@@ -353,7 +579,7 @@ body{-webkit-overflow-scrolling:touch;overscroll-behavior:none}
   function playHeartbeat(ctx,startAt,count,initialInterval){
     var now=ctx.currentTime;
     var master=ctx.createGain();
-    master.gain.value=0.5;master.connect(ctx.destination);
+    master.gain.value=0.5*audioScale;master.connect(ctx.destination);
     var t=now+startAt;
     for(var i=0;i<count;i++){
       var interval=initialInterval*Math.pow(0.85,i); // 加速
@@ -385,8 +611,8 @@ body{-webkit-overflow-scrolling:touch;overscroll-behavior:none}
     osc.frequency.linearRampToValueAtTime(150,now+1.2);
     var g=ctx.createGain();
     g.gain.setValueAtTime(0,now);
-    g.gain.linearRampToValueAtTime(0.15,now+0.1);
-    g.gain.linearRampToValueAtTime(0.08,now+0.8);
+    g.gain.linearRampToValueAtTime(0.15*audioScale,now+0.1);
+    g.gain.linearRampToValueAtTime(0.08*audioScale,now+0.8);
     g.gain.linearRampToValueAtTime(0,now+1.5);
     var filt=ctx.createBiquadFilter();filt.type='bandpass';filt.frequency.value=400;filt.Q.value=8;
     osc.connect(filt);filt.connect(g);g.connect(ctx.destination);
@@ -406,7 +632,7 @@ body{-webkit-overflow-scrolling:touch;overscroll-behavior:none}
     var src=ctx.createBufferSource();src.buffer=buf;
     var filt=ctx.createBiquadFilter();
     filt.type='bandpass';filt.frequency.value=800;filt.Q.value=5;
-    var g=ctx.createGain();g.gain.value=0.12;
+    var g=ctx.createGain();g.gain.value=0.12*audioScale;
     src.connect(filt);filt.connect(g);g.connect(ctx.destination);
     src.start(now);src.stop(now+dur);
   }
@@ -414,7 +640,7 @@ body{-webkit-overflow-scrolling:touch;overscroll-behavior:none}
   // 女鬼尖叫
   function playScream(ctx){
     var now=ctx.currentTime;
-    var master=ctx.createGain();master.gain.value=1;master.connect(ctx.destination);
+    var master=ctx.createGain();master.gain.value=audioScale;master.connect(ctx.destination);
     // 多层尖叫
     function makeScream(sAt,dur,f0,f1,vol){
       var len=ctx.sampleRate*dur;var buf=ctx.createBuffer(1,len,ctx.sampleRate);
@@ -488,7 +714,7 @@ body{-webkit-overflow-scrolling:touch;overscroll-behavior:none}
 
   // 二次惊吓音效(短促、更响)
   function playSecondScare(ctx){
-    var now=ctx.currentTime;var m=ctx.createGain();m.gain.value=1;m.connect(ctx.destination);
+    var now=ctx.currentTime;var m=ctx.createGain();m.gain.value=audioScale;m.connect(ctx.destination);
     // 超短尖叫
     var len=ctx.sampleRate*0.8;var buf=ctx.createBuffer(1,len,ctx.sampleRate);
     var d=buf.getChannelData(0);
@@ -510,16 +736,21 @@ body{-webkit-overflow-scrolling:touch;overscroll-behavior:none}
 
   /* ======================== Canvas 恐怖画面 ======================== */
   var canvas,ctx2,animId;
-  var scareStartTime=0,bloodDrops=[],eyeDrips=[];
+  var scareStartTime=0,bloodDrops=[],eyeDrips=[],dustMotes=[];
   var glitchTimer=0,faceScale=1;
+  // 摄像机微动(手持呼吸效果)
+  var cameraDriftX=0,cameraDriftY=0;
 
-  // 预生成血滴
-  for(var bi=0;bi<30;bi++){
+  // 预生成血滴(增加拖尾数组 + 初速度)
+  for(var bi=0;bi<36;bi++){
     bloodDrops.push({
       x:Math.sin(bi*73.1)*0.45+0.5,y:Math.sin(bi*137.3)*0.3,
-      speed:0.2+Math.sin(bi*51.7)*0.15+0.15,
+      vy:0.25+Math.sin(bi*51.7)*0.18+0.18,         // 初速度(像素/帧)
+      gravity:0.012+Math.sin(bi*89.1)*0.005,        // 重力(加速度)
       size:2+Math.sin(bi*93.2)*3+3,
-      alpha:0.4+Math.sin(bi*47.8)*0.3+0.3
+      alpha:0.45+Math.sin(bi*47.8)*0.3+0.3,
+      // 拖尾历史(y 位置)
+      trail:[]
     });
   }
   for(var ei=0;ei<8;ei++){
@@ -528,25 +759,51 @@ body{-webkit-overflow-scrolling:touch;overscroll-behavior:none}
       width:1.5+Math.sin(ei*41)*2+2,speed:2+Math.sin(ei*89)*2+2
     });
   }
+  // 预生成浮尘(50 颗, 随机位置 + 自身速度)
+  for(var di=0;di<50;di++){
+    dustMotes.push({
+      x:sRand(di*7.13)*1.0,
+      y:sRand(di*11.7)*1.0,
+      vx:(sRand(di*23.5)-0.5)*0.0003,
+      vy:(sRand(di*31.7)-0.7)*0.0006,  // 略偏下
+      r:sRand(di*41.3)*1.5+0.6,
+      alpha:sRand(di*57.7)*0.4+0.15
+    });
+  }
 
   function sRand(seed){var x=Math.sin(seed)*43758.5453;return x-Math.floor(x)}
 
   // 血字文本
-  var bloodTexts=['不要回头...','你后面有人...','看看你的影子...','嘻嘻嘻...','我看到你了...'];
+  var bloodTexts=['不要回头...','你后面有人...','看看你的影子...','嘻嘻嘻...','我看到你了...','它不会离开你的...','你是它看着的...','回头...回头...'];
   var currentBloodText='',bloodTextAlpha=0,bloodTextTimer=0;
 
   function drawScaryFace(c,w,h,t){
     c.fillStyle='#000';c.fillRect(0,0,w,h);
 
-    // ===== 假安全期(前2秒): 只显示微弱的诡异元素 =====
     var isFakeSafe=t<2;
     var safeRatio=isFakeSafe?t/2:1;
 
-    // 微弱红光脉冲(假安全期很微弱)
+    // 视觉冲击
+    var shockScale=1;
+    var shockPoints=[3,3.5,4.2,5.5];
+    for(var si=0;si<shockPoints.length;si++){
+      var dt=t-shockPoints[si];
+      if(dt>=0&&dt<0.25){
+        var p=dt<0.08?(dt/0.08):(1-(dt-0.08)/0.17);
+        shockScale=1+Math.max(0,p)*0.18*motionScale;
+        break;
+      }
+    }
+
+    // 摄像机微动(手持呼吸感)
+    cameraDriftX=Math.sin(t*0.31)*0.6+Math.cos(t*0.73)*0.3;
+    cameraDriftY=Math.sin(t*0.47)*0.4+Math.cos(t*0.67)*0.2;
+
+    // 环境红光脉冲
     var pulseAlpha=isFakeSafe?0.02:0.2+Math.sin(t*6)*0.15;
     c.fillStyle='rgba(150,0,0,'+pulseAlpha+')';c.fillRect(0,0,w,h);
 
-    // 随机全屏闪烁(假安全期几乎不闪)
+    // 随机全屏闪烁
     var flickerChance=isFakeSafe?0.98:0.92;
     if(Math.sin(t*37)>flickerChance){
       c.fillStyle=isFakeSafe?'rgba(255,255,255,0.03)':'rgba(255,255,255,0.1)';
@@ -554,12 +811,10 @@ body{-webkit-overflow-scrolling:touch;overscroll-behavior:none}
     }
 
     var cx=w/2,cy=h*0.38;
-    // 抖动(假安全期轻微抖动)
     var shakeMul=isFakeSafe?0.3:1;
-    var shakeX=(Math.sin(t*47)*6+Math.sin(t*73)*3)*shakeMul;
-    var shakeY=(Math.cos(t*53)*4+Math.sin(t*61)*3)*shakeMul;
+    var shakeX=(Math.sin(t*47)*6+Math.sin(t*73)*3)*shakeMul*motionScale;
+    var shakeY=(Math.cos(t*53)*4+Math.sin(t*61)*3)*shakeMul*motionScale;
 
-    // Glitch偏移
     if(t-glitchTimer>0.3+Math.sin(t)*0.2)glitchTimer=t;
     var glitchOff=Math.max(0,30-(t-glitchTimer)*150);
     var totalShakeX=shakeX+(glitchOff>0?Math.sin(glitchTimer*100)*glitchOff:0);
@@ -568,94 +823,189 @@ body{-webkit-overflow-scrolling:touch;overscroll-behavior:none}
     faceScale=Math.min(faceScale+(isFakeSafe?0.001:0.003),1.3);
     var fs=sc*faceScale;
 
-    c.save();c.translate(cx+totalShakeX,cy+shakeY);
+    c.save();
+    c.translate(cx+totalShakeX+cameraDriftX,cy+shakeY+cameraDriftY);
+    if(shockScale!==1)c.scale(shockScale,shockScale);
 
-    // 暗绿环境光
+    // ===== 暗绿环境光 + 体积光束 =====
     var env=c.createRadialGradient(0,100*fs,50*fs,0,0,250*fs);
     env.addColorStop(0,'rgba(0,40,20,'+((isFakeSafe?0.1:0.3)*safeRatio)+')');
     env.addColorStop(1,'rgba(0,0,0,0)');
     c.fillStyle=env;c.fillRect(-250*fs,-250*fs,500*fs,500*fs);
+    // 体积光(从左上角暗淡锥形光)
+    if(!isFakeSafe){
+      c.save();c.globalAlpha=0.06;
+      c.beginPath();c.moveTo(-250*fs,-300*fs);c.lineTo(-80*fs,-50*fs);c.lineTo(60*fs,-50*fs);c.closePath();
+      c.fillStyle='rgba(180,160,120,1)';c.fill();c.restore();
+    }
 
-    // 头发后层
+    // ===== 头发后层(增至160根 + 高光) =====
     c.save();
-    for(var hi=0;hi<80;hi++){
-      var ha=-Math.PI*0.9+(hi/80)*Math.PI*1.8;
+    for(var hi=0;hi<160;hi++){
+      var ha=-Math.PI*0.9+(hi/160)*Math.PI*1.8;
       var hx=Math.cos(ha)*120*fs,hy=Math.sin(ha)*170*fs-15*fs;
       var r1=sRand(hi*127.1),r2=sRand(hi*269.5),r3=sRand(hi*419.2);
+      var ex=hx+(r1-0.5)*100*fs,ey=hy+50*fs+r2*120*fs;
+      // 暗层
       c.beginPath();c.moveTo(hx,hy);
-      c.bezierCurveTo(hx+(r3-0.5)*50*fs,hy+(r2*120*fs+50*fs)*0.3,hx+(r1-0.5)*100*fs+(r1-0.3)*30*fs,hy+(r2*120*fs+50*fs)*0.7,hx+(r1-0.5)*100*fs,hy+50*fs+r2*120*fs);
-      c.strokeStyle='rgba(5,5,5,'+(0.6+r1*0.4)+')';c.lineWidth=(3+r2*5)*fs;c.stroke();
+      c.bezierCurveTo(hx+(r3-0.5)*50*fs,hy+(r2*120*fs+50*fs)*0.3,hx+(r1-0.5)*100*fs+(r1-0.3)*30*fs,hy+(r2*120*fs+50*fs)*0.7,ex,ey);
+      c.strokeStyle='rgba(5,5,5,'+(0.5+r1*0.5)+')';c.lineWidth=(2+r2*6)*fs;c.stroke();
+      // 高光层(偏移 0.5px, 10% alpha)
+      c.beginPath();c.moveTo(hx+0.5*fs,hy);
+      c.bezierCurveTo(hx+(r3-0.5)*50*fs+0.5*fs,hy+(r2*120*fs+50*fs)*0.3,hx+(r1-0.5)*100*fs+(r1-0.3)*30*fs+0.5*fs,hy+(r2*120*fs+50*fs)*0.7,ex+0.5*fs,ey);
+      c.strokeStyle='rgba(60,55,45,'+(0.08+r1*0.07)+')';c.lineWidth=(1+r2*2)*fs;c.stroke();
+    }
+    // 鬓角贴肤发丝
+    for(var ts=0;ts<6;ts++){
+      var tx=(-55+ts*18)*fs,ty=-30*fs;
+      c.beginPath();c.moveTo(tx,ty);
+      c.quadraticCurveTo(tx+(sRand(ts*311)-0.4)*15*fs,ty+60*fs+r2*30*fs,tx+(sRand(ts*413)-0.5)*20*fs,ty+90*fs+sRand(ts*517)*40*fs);
+      c.strokeStyle='rgba(8,8,8,0.55)';c.lineWidth=(2+sRand(ts*619)*3)*fs;c.stroke();
     }
     c.restore();
 
-    // 脸
+    // ===== 脸(多层光照 + 亚表面散射 + 湿润) =====
+    // Base
     c.beginPath();c.ellipse(0,0,110*fs,155*fs,0,0,Math.PI*2);
     var fg=c.createRadialGradient(0,-30*fs,10*fs,0,10*fs,160*fs);
     fg.addColorStop(0,'#c8baa0');fg.addColorStop(0.3,'#baa888');fg.addColorStop(0.7,'#9a8a6a');fg.addColorStop(1,'#5a4a30');
     c.fillStyle=fg;c.fill();
+    // 亚表面散射(暖橙色从内部透出)
+    c.beginPath();c.ellipse(0,10*fs,90*fs,130*fs,0,0,Math.PI*2);
+    var ss=c.createRadialGradient(0,20*fs,20*fs,0,10*fs,130*fs);
+    ss.addColorStop(0,'rgba(192,128,96,'+(isFakeSafe?0.04:0.12)+')');ss.addColorStop(1,'rgba(192,128,96,0)');
+    c.fillStyle=ss;c.fill();
+    // 高光(额头鼻梁颧骨)
+    var specAlpha=isFakeSafe?0.03:0.09;
+    var specPts=[[0,-80,50],[0,-20,35],[-38,-40,22],[38,-40,22],[-30,-60,18],[30,-60,18]];
+    specPts.forEach(function(sp){
+      c.beginPath();c.ellipse(sp[0]*fs,sp[1]*fs,sp[2]*fs,sp[2]*fs*0.5,0,0,Math.PI*2);
+      var g=c.createRadialGradient(sp[0]*fs,sp[1]*fs,0,sp[0]*fs,sp[1]*fs,sp[2]*fs);
+      g.addColorStop(0,'rgba(255,255,240,'+specAlpha+')');g.addColorStop(1,'rgba(255,255,240,0)');
+      c.fillStyle=g;c.fill();
+    });
+    // 微粗糙噪声
+    if(!isFakeSafe){
+      c.save();c.globalAlpha=0.025;
+      for(var ni=0;ni<60;ni++){
+        var nx=(sRand(ni*31.7)-0.5)*200*fs,ny=(sRand(ni*57.3)-0.5)*300*fs;
+        if(nx*nx/(110*fs*110*fs)+ny*ny/(155*fs*155*fs)<1){
+          c.fillStyle=sRand(ni*89.1)>0.5?'rgba(30,20,10,1)':'rgba(200,180,160,1)';
+          c.fillRect(nx,ny,1.5*fs,1.5*fs);
+        }
+      }
+      c.restore();
+    }
+    // 太阳穴蓝色血管
+    [[-1,50],[1,50]].forEach(function(v,i){
+      var vx=(-90+i*180)*0.55*fs,vy=-55*fs;
+      var vg=c.createRadialGradient(vx,vy,0,vx,vy,22*fs);
+      vg.addColorStop(0,'rgba(60,80,140,'+(isFakeSafe?0.03:0.1)+')');vg.addColorStop(1,'rgba(60,80,140,0)');
+      c.fillStyle=vg;c.fillRect(vx-22*fs,vy-22*fs,44*fs,44*fs);
+      // 血管路径
+      c.strokeStyle='rgba(50,60,120,'+(isFakeSafe?0.04:0.12)+')';c.lineWidth=1.2*fs;
+      c.beginPath();c.moveTo(vx,vy);
+      c.quadraticCurveTo(vx+sRand(i*31)*10*fs,vy+25*fs,vx+sRand(i*37)*8*fs,vy+55*fs);c.stroke();
+    });
 
-    // 腐烂斑点
-    for(var sp=0;sp<25;sp++){
+    // 腐烂斑点(增到 40)
+    for(var sp=0;sp<40;sp++){
       var sx=sRand(sp*31.7)*200*fs-100*fs,sy=sRand(sp*57.3)*300*fs-150*fs;
       var sr=(5+sRand(sp*89.1)*15)*fs;
       if(sx*sx/(110*fs*110*fs)+sy*sy/(155*fs*155*fs)<1){
         c.beginPath();c.ellipse(sx,sy,sr,sr*0.7,sRand(sp*13)*Math.PI,0,Math.PI*2);
         c.fillStyle='rgba(60,30,20,'+(0.1+sRand(sp*71)*0.2)+')';c.fill();
+        // 凝固深色边缘
+        c.strokeStyle='rgba(40,15,10,'+(0.05+sRand(sp*91)*0.08)+')';c.lineWidth=1*fs;c.stroke();
       }
     }
 
-    // 黑眼圈
+    // 黑眼圈(加深)
     [[-1,-1],[1,-1]].forEach(function(side){
       var ex=side[0]*40*fs,ey=side[1]*18*fs;
-      var dk=c.createRadialGradient(ex,ey+5*fs,2*fs,ex,ey+5*fs,30*fs);
-      dk.addColorStop(0,'rgba(30,10,30,0.5)');dk.addColorStop(1,'rgba(30,10,30,0)');
-      c.fillStyle=dk;c.fillRect(ex-30*fs,ey-20*fs,60*fs,50*fs);
+      var dk=c.createRadialGradient(ex,ey+5*fs,2*fs,ex,ey+5*fs,32*fs);
+      dk.addColorStop(0,'rgba(20,5,25,0.6)');dk.addColorStop(1,'rgba(20,5,25,0)');
+      c.fillStyle=dk;c.fillRect(ex-35*fs,ey-25*fs,70*fs,55*fs);
     });
 
-    // 裂纹
-    c.strokeStyle='rgba(40,20,10,0.4)';c.lineWidth=1.5*fs;
-    for(var cr=0;cr<8;cr++){
-      var crx=(sRand(cr*101)-0.5)*160*fs,cry=(sRand(cr*203)-0.5)*250*fs;
+    // 裂纹(增至25条+分叉)
+    c.lineWidth=1.5*fs;
+    for(var cr=0;cr<25;cr++){
+      var crx=(sRand(cr*101)-0.5)*180*fs,cry=(sRand(cr*203)-0.5)*280*fs;
+      c.strokeStyle='rgba(40,20,10,'+(0.2+sRand(cr*77)*0.3)+')';
       c.beginPath();c.moveTo(crx,cry);
-      for(var cj=1;cj<=4;cj++)c.lineTo(crx+(sRand(cr*300+cj*50)-0.5)*40*fs,cry+cj*15*fs);
+      var px=crx,py=cry;
+      for(var cj=1;cj<=6;cj++){
+        var nx=px+(sRand(cr*300+cj*50)-0.5)*30*fs;
+        var ny=py+8*fs+sRand(cr*400+cj*30)*8*fs;
+        c.lineTo(nx,ny);px=nx;py=ny;
+      }
       c.stroke();
+      // 分支
+      if(sRand(cr*500)>0.4){
+        c.beginPath();c.moveTo(px,py);
+        var ba=sRand(cr*600)*Math.PI-Math.PI*0.5;
+        c.lineTo(px+Math.cos(ba)*25*fs,py+Math.sin(ba)*25*fs);
+        c.strokeStyle='rgba(40,20,10,0.15)';c.stroke();
+      }
     }
 
-    // 眼睛
+    // ===== 眼睛(升级:眼睑 + 泪液湿层 + 角膜高光 + 瞳孔生理变化) =====
     [[-40,1],[40,0.9]].forEach(function(e){
       var ex=e[0]*fs,ey=-18*fs;
-      // 眼眶(不完全对称)
-      c.beginPath();c.ellipse(ex,ey,35*fs,25*fs,e[0]<0?-0.05:0.05,0,Math.PI*2);
-      var sg=c.createRadialGradient(ex,ey,5*fs,ex,ey,35*fs);
+      // 眼眶
+      c.beginPath();c.ellipse(ex,ey,36*fs,26*fs,e[0]<0?-0.05:0.05,0,Math.PI*2);
+      var sg=c.createRadialGradient(ex,ey,5*fs,ex,ey,36*fs);
       sg.addColorStop(0,'#000');sg.addColorStop(0.6,'#1a0808');sg.addColorStop(1,'#3a2010');
       c.fillStyle=sg;c.fill();
+      // 上眼睑厚度(眉骨阴影)
+      c.beginPath();c.ellipse(ex,ey-8*fs,34*fs,8*fs,0,Math.PI,Math.PI*2);
+      c.fillStyle='rgba(10,0,10,0.4)';c.fill();
+      // 下眼睑厚度
+      c.beginPath();c.ellipse(ex,ey+14*fs,30*fs,5*fs,0,0,Math.PI);
+      c.fillStyle='rgba(15,5,5,0.25)';c.fill();
+      // 湿眼眶边缘(泪液线)
+      c.beginPath();c.ellipse(ex,ey,18*fs*e[1]+2*fs,14*fs+2*fs,0,0,Math.PI*2);
+      c.strokeStyle='rgba(140,130,110,0.15)';c.lineWidth=2*fs;c.stroke();
       // 眼球
       c.beginPath();c.ellipse(ex,ey,18*fs*e[1],14*fs,0,0,Math.PI*2);
       var eg=c.createRadialGradient(ex,ey-2*fs,2*fs,ex,ey,18*fs);
       eg.addColorStop(0,'#aaaa33');eg.addColorStop(0.5,'#887722');eg.addColorStop(1,'#443311');
       c.fillStyle=eg;c.fill();
-      // 瞳孔
-      var ps=(3+Math.sin(t*15)*1.5)*fs;
+      // 泪液湿润层(上半球反射)
+      c.beginPath();c.ellipse(ex,ey-3*fs,14*fs*e[1],6*fs,0,Math.PI,Math.PI*2);
+      c.fillStyle='rgba(180,170,140,0.08)';c.fill();
+      // 瞳孔(呼吸性变化 0.5-2s 周期)
+      var ps=(3+Math.sin(t*15)*1.5+Math.sin(t*1.2)*0.8)*fs;
       c.beginPath();c.arc(ex,ey,ps,0,Math.PI*2);c.fillStyle='#000';c.fill();
-      // 红血丝
-      c.strokeStyle='rgba(180,0,0,0.6)';c.lineWidth=1*fs;
-      for(var bv=0;bv<12;bv++){
+      // 角膜高光(catch-lights)
+      c.beginPath();c.arc(ex-5*fs,ey-5*fs,2.5*fs,0,Math.PI*2);c.fillStyle='rgba(255,255,240,0.85)';c.fill();
+      c.beginPath();c.arc(ex+3*fs,ey+2*fs,1.2*fs,0,Math.PI*2);c.fillStyle='rgba(255,255,240,0.4)';c.fill();
+      // 红血丝(增到15条)
+      c.strokeStyle='rgba(180,0,0,0.55)';c.lineWidth=0.8*fs;
+      for(var bv=0;bv<15;bv++){
         var ba=sRand(bv*77+(e[0]<0?0:50))*Math.PI*2;
+        var bLen=14+sRand(bv*33+(e[0]<0?0:50))*10;
         c.beginPath();
-        c.moveTo(ex+Math.cos(ba)*14*fs,ey+Math.sin(ba)*10*fs);
-        c.lineTo(ex+Math.cos(ba)*(20+sRand(bv*33+(e[0]<0?0:50))*10)*fs,ey+Math.sin(ba)*(15+sRand(bv*55+(e[0]<0?0:50))*8)*fs);
+        c.moveTo(ex+Math.cos(ba)*bLen*0.8*fs,ey+Math.sin(ba)*bLen*0.55*fs);
+        var bend=ba+sRand(bv*55+(e[0]<0?0:50))*0.3-0.15;
+        c.quadraticCurveTo(ex+Math.cos(bend)*(bLen+3)*0.9*fs,ey+Math.sin(bend)*(bLen+3)*0.55*fs,ex+Math.cos(ba)*(bLen+4)*fs,ey+Math.sin(ba)*(bLen+4)*0.6*fs);
         c.stroke();
       }
     });
 
-    // 血泪
+    // 血泪(加强湿润感)
     c.lineCap='round';
     eyeDrips.forEach(function(drip,ed){
       var dl=drip.length*fs+Math.sin(t*drip.speed)*20*fs;
       [-40,40].forEach(function(ox){
         c.beginPath();c.moveTo(ox*fs+drip.offset*fs,0);
         c.quadraticCurveTo(ox*fs+drip.offset*fs+(sRand(ed*11+(ox<0?0:7))-0.5)*8*fs,dl*0.5,ox*fs+drip.offset*fs+sRand(ed*22+(ox<0?0:7))*5*fs,dl);
-        c.strokeStyle='rgba(160,0,0,0.5)';c.lineWidth=drip.width*fs;c.stroke();
+        c.strokeStyle='rgba(160,0,0,0.55)';c.lineWidth=drip.width*fs;c.stroke();
+        // 泪液湿润亮边
+        c.beginPath();c.moveTo(ox*fs+drip.offset*fs+1*fs,0);
+        c.quadraticCurveTo(ox*fs+drip.offset*fs+1*fs+(sRand(ed*11+(ox<0?0:7))-0.5)*8*fs,dl*0.5,ox*fs+drip.offset*fs+1*fs+sRand(ed*22+(ox<0?0:7))*5*fs,dl);
+        c.strokeStyle='rgba(200,120,120,0.12)';c.lineWidth=(drip.width+1)*fs;c.stroke();
       });
     });
 
@@ -664,33 +1014,54 @@ body{-webkit-overflow-scrolling:touch;overscroll-behavior:none}
       c.beginPath();c.ellipse(n[0]*fs,28*fs,6*fs*n[1],8*fs,0,0,Math.PI*2);c.fillStyle='#1a0505';c.fill();
     });
 
-    // 嘴巴
+    // ===== 嘴巴(牙齿升级) =====
     var mo=50*fs+Math.sin(t*25)*8*fs;
     c.beginPath();c.ellipse(0,65*fs,60*fs,mo,0,0,Math.PI*2);c.fillStyle='#050000';c.fill();
     c.beginPath();c.ellipse(0,60*fs,50*fs,mo*0.7,0,0,Math.PI*2);
     var mg=c.createRadialGradient(0,65*fs,5*fs,0,65*fs,mo);
     mg.addColorStop(0,'#3a0000');mg.addColorStop(0.5,'#2a0000');mg.addColorStop(1,'#0a0000');
     c.fillStyle=mg;c.fill();
-    // 牙齿(上下各10颗，大小不一)
+    // 牙齿(上10+下8, 错位+珐琅+牙渍+齿根)
     for(var ti=0;ti<10;ti++){
       var tx=-48*fs+ti*(96*fs/9);
-      // 上
+      var rot=(sRand(ti*29)-0.5)*0.09;  // 微旋转
+      c.save();c.translate(tx,30*fs);c.rotate(rot);
       var th=(12+sRand(ti*37)*18)*fs,tw=(5+sRand(ti*53)*4)*fs;
-      c.beginPath();c.moveTo(tx-tw,30*fs);c.lineTo(tx+tw,30*fs);c.lineTo(tx+tw*0.7,30*fs+th);c.lineTo(tx-tw*0.7,30*fs+th);
+      // 齿体
+      c.beginPath();c.moveTo(-tw,0);c.lineTo(tw,0);c.lineTo(tw*0.7,th);c.lineTo(-tw*0.7,th);
       c.fillStyle=sRand(ti*19)>0.5?'#c8b89a':'#8a7a60';c.fill();
-      // 下
-      var th2=(10+sRand(ti*41+99)*14)*fs,tw2=(5+sRand(ti*67+99)*3)*fs;
-      c.beginPath();c.moveTo(tx-tw2,100*fs);c.lineTo(tx+tw2,100*fs);c.lineTo(tx+tw2*0.6,100*fs-th2);c.lineTo(tx-tw2*0.6,100*fs-th2);
-      c.fillStyle=sRand(ti*23+99)>0.5?'#b8a88a':'#7a6a50';c.fill();
+      // 齿根(暗三角)
+      c.beginPath();c.moveTo(-tw*0.5,th);c.lineTo(tw*0.5,th);c.lineTo(0,th+8*fs);
+      c.fillStyle='rgba(80,60,40,0.5)';c.fill();
+      // 珐琅高光
+      c.beginPath();c.moveTo(-tw*0.3,2*fs);c.lineTo(tw*0.3,2*fs);c.lineTo(tw*0.15,6*fs);c.lineTo(-tw*0.15,6*fs);
+      c.fillStyle='rgba(255,255,245,0.18)';c.fill();
+      // 牙渍
+      if(sRand(ti*71)>0.6){
+        c.fillStyle='rgba(120,80,30,0.25)';
+        c.fillRect(-tw*0.4,3*fs,tw*0.5,2*fs);
+      }
+      c.restore();
+    }
+    for(var ti2=0;ti2<8;ti2++){
+      var tx2=-40*fs+ti2*(80*fs/7);
+      var rot2=(sRand(ti2*41+99)-0.5)*0.09;
+      c.save();c.translate(tx2,100*fs);c.rotate(rot2);
+      var th2=(10+sRand(ti2*41+99)*14)*fs,tw2=(5+sRand(ti2*67+99)*3)*fs;
+      c.beginPath();c.moveTo(-tw2,0);c.lineTo(tw2,0);c.lineTo(tw2*0.6,-th2);c.lineTo(-tw2*0.6,-th2);
+      c.fillStyle=sRand(ti2*23+99)>0.5?'#b8a88a':'#7a6a50';c.fill();
+      c.beginPath();c.moveTo(-tw2*0.3,-2*fs);c.lineTo(tw2*0.3,-2*fs);c.lineTo(tw2*0.15,-6*fs);c.lineTo(-tw2*0.15,-6*fs);
+      c.fillStyle='rgba(255,255,245,0.15)';c.fill();
+      c.restore();
     }
     // 牙龈
     c.beginPath();c.ellipse(0,30*fs,55*fs,8*fs,0,0,Math.PI);c.fillStyle='rgba(120,20,20,0.6)';c.fill();
     c.beginPath();c.ellipse(0,100*fs,55*fs,8*fs,0,Math.PI,Math.PI*2);c.fillStyle='rgba(100,15,15,0.5)';c.fill();
 
-    // 头发前层
+    // 头发前层(高光版)
     c.save();c.globalCompositeOperation='multiply';
-    for(var hi3=0;hi3<50;hi3++){
-      var ha3=-Math.PI+(hi3/50)*Math.PI*2;
+    for(var hi3=0;hi3<60;hi3++){
+      var ha3=-Math.PI+(hi3/60)*Math.PI*2;
       if(ha3>0&&ha3<Math.PI)continue;
       var hx3=Math.cos(ha3)*115*fs,hy3=Math.sin(ha3)*160*fs-10*fs;
       var r13=sRand(hi3*127.1+99),r23=sRand(hi3*269.5+99);
@@ -703,7 +1074,6 @@ body{-webkit-overflow-scrolling:touch;overscroll-behavior:none}
 
     // ===== Glitch =====
     if(glitchOff>5&&!isFakeSafe){
-      var imgData=c.getImageData(0,0,w,h);
       var glitchY=Math.floor(h*sRand(Math.floor(t*10)));
       var glitchH=Math.floor(10+sRand(Math.floor(t*7))*40);
       var shiftX=Math.floor((sRand(Math.floor(t*13))-0.5)*60);
@@ -718,25 +1088,60 @@ body{-webkit-overflow-scrolling:touch;overscroll-behavior:none}
       }
     }
 
-    // ===== 碎裂效果(吓人阶段触发) =====
-    if(!isFakeSafe && t>2 && t<4){
-      drawShatter(c,w,h,t-2);
-    }
+    // ===== 碎裂效果 =====
+    if(!isFakeSafe&&t>2&&t<4){drawShatter(c,w,h,t-2);}
 
-    // 血滴(假安全期不显示)
+    // ===== 血滴(物理滴落 + 拖尾) =====
     if(!isFakeSafe){
       bloodDrops.forEach(function(drop){
-        drop.y+=drop.speed*0.01;
-        if(drop.y>1.2)drop.y=-0.1;
+        drop.vy+=drop.gravity;
+        drop.y+=drop.vy*0.008;
+        // 拖尾
+        drop.trail.push(drop.y);
+        if(drop.trail.length>6)drop.trail.shift();
+        if(drop.y>1.3){drop.y=-0.1;drop.vy=0.25+Math.sin(Math.random()*99)*0.2;drop.trail=[];}
+        // 画拖尾
+        for(var ti=drop.trail.length-1;ti>=1;ti--){
+          var trailAlpha=drop.alpha*0.15*(ti/drop.trail.length);
+          c.beginPath();c.ellipse(drop.x*w,drop.trail[ti]*h,drop.size*fs*0.7,drop.size*fs*1.5,0,0,Math.PI*2);
+          c.fillStyle='rgba(120,0,0,'+trailAlpha+')';c.fill();
+        }
+        // 主滴
         c.beginPath();c.ellipse(drop.x*w,drop.y*h,drop.size*fs,drop.size*fs*2.5,0,0,Math.PI*2);
-        c.fillStyle='rgba(140,0,0,'+drop.alpha*0.5+')';c.fill();
+        c.fillStyle='rgba(140,0,0,'+drop.alpha*0.55+')';c.fill();
+        // 高光
+        c.beginPath();c.ellipse(drop.x*w-drop.size*fs*0.3,drop.y*h-drop.size*fs*0.5,drop.size*fs*0.3,drop.size*fs*0.6,0,0,Math.PI*2);
+        c.fillStyle='rgba(220,60,60,0.2)';c.fill();
       });
     }
 
-    // ===== 闪烁人影(假安全期后随机出现) =====
-    if(!isFakeSafe&&sRand(Math.floor(t*3))>0.85){
-      drawShadowFigure(c,w,h,t);
+    // ===== 浮尘 =====
+    if(!isFakeSafe){
+      c.save();c.globalAlpha=1;
+      dustMotes.forEach(function(mote){
+        mote.x+=mote.vx;mote.y+=mote.vy;
+        if(mote.y>1.1){mote.y=-0.05;mote.x=Math.random();}
+        if(mote.x<-0.1||mote.x>1.1)mote.x=Math.random();
+        c.beginPath();c.arc(mote.x*w,mote.y*h,mote.r,0,Math.PI*2);
+        c.fillStyle='rgba(200,190,170,'+mote.alpha+')';c.fill();
+      });
+      c.restore();
     }
+
+    // ===== 胶片噪点(每帧150个微小点) =====
+    if(!isFakeSafe&&!reduceMotion){
+      c.save();c.globalAlpha=0.03;
+      for(var gn=0;gn<150;gn++){
+        var gx=sRand(gn*3.1+Math.floor(t*7)*0.001)*w;
+        var gy=sRand(gn*7.3+Math.floor(t*11)*0.001)*h;
+        c.fillStyle=sRand(gn*13.7)>0.5?'#fff':'#000';
+        c.fillRect(gx,gy,1.5,1.5);
+      }
+      c.restore();
+    }
+
+    // ===== 闪烁人影 =====
+    if(!isFakeSafe&&sRand(Math.floor(t*3))>0.85){drawShadowFigure(c,w,h,t);}
 
     // ===== 血字浮现 =====
     if(!isFakeSafe&&t-bloodTextTimer>2.5){
@@ -744,7 +1149,7 @@ body{-webkit-overflow-scrolling:touch;overscroll-behavior:none}
       currentBloodText=bloodTexts[Math.floor(sRand(Math.floor(t*100))*bloodTexts.length)];
       bloodTextAlpha=0;
     }
-    if(!isFakeSafe && currentBloodText){
+    if(!isFakeSafe&&currentBloodText){
       bloodTextAlpha=Math.min(bloodTextAlpha+0.02,0.8);
       var fadeOut=t-bloodTextTimer>2?Math.max(0,1-(t-bloodTextTimer-2)/0.5):1;
       var ta=bloodTextAlpha*fadeOut;
@@ -759,18 +1164,18 @@ body{-webkit-overflow-scrolling:touch;overscroll-behavior:none}
       }
     }
 
-    // 暗角
-    var vig=c.createRadialGradient(w/2,h*0.4,Math.min(w,h)*0.15,w/2,h*0.4,Math.max(w,h)*0.75);
-    vig.addColorStop(0,'rgba(0,0,0,0)');vig.addColorStop(0.5,'rgba(0,0,0,'+(isFakeSafe?0.1:0.3)+')');vig.addColorStop(1,'rgba(0,0,0,'+(isFakeSafe?0.4:0.85)+')');
+    // 暗角(中央保锐,边缘加深)
+    var vig=c.createRadialGradient(w/2,h*0.4,Math.min(w,h)*0.12,w/2,h*0.4,Math.max(w,h)*0.7);
+    vig.addColorStop(0,'rgba(0,0,0,0)');vig.addColorStop(0.4,'rgba(0,0,0,'+(isFakeSafe?0.08:0.2)+')');vig.addColorStop(1,'rgba(0,0,0,'+(isFakeSafe?0.45:0.9)+')');
     c.fillStyle=vig;c.fillRect(0,0,w,h);
 
-    // 假安全期特殊效果: 淡淡的绿光,让画面看起来"没那么可怕"
     if(isFakeSafe){
       c.fillStyle='rgba(0,0,0,'+(0.7-t*0.3)+')';c.fillRect(0,0,w,h);
     }
   }
 
-  // 简笔人影轮廓
+
+  // 简笔人影轮廓(用连续函数避免跨整数秒时瞬移)
   function drawShadowFigure(c,w,h,t){
     var fx=sRand(Math.floor(t*7))*w;
     var fy=h*0.3+sRand(Math.floor(t*11))*h*0.3;
@@ -821,43 +1226,195 @@ body{-webkit-overflow-scrolling:touch;overscroll-behavior:none}
 
   /* ======================== 动画控制 ======================== */
   var flashInterval=null;
+  var normalAnimId=null;
+
+  // =============== "正常→恐怖" 反差场景 ===============
+  // 画一个看起来"一切正常"的温馨画面, 用于打造心理落差
+  function drawNormalScene(c,w,h,t,p){
+    // 整体淡褐色背景(已写在 css 里)
+    c.fillStyle='rgba(0,0,0,0)';
+
+    // 暖色台灯光斑(右上)
+    var lamp=c.createRadialGradient(w*0.78,h*0.22,5,w*0.78,h*0.22,w*0.4);
+    lamp.addColorStop(0,'rgba(255,210,140,'+(0.45+p*0.5)+')');
+    lamp.addColorStop(0.3,'rgba(255,180,100,'+(0.2+p*0.3)+')');
+    lamp.addColorStop(1,'rgba(255,180,100,0)');
+    c.fillStyle=lamp;c.fillRect(0,0,w,h);
+
+    // 墙纸纹理(条纹)
+    c.save();c.globalAlpha=0.04+p*0.05;
+    for(var wp=0;wp<40;wp++){
+      c.fillStyle=wp%2===0?'rgba(255,240,200,1)':'rgba(80,50,30,1)';
+      c.fillRect(0,wp*(h/40),w,h/40);
+    }
+    c.restore();
+
+    // 墙上一张照片(模糊)
+    var photoW=w*0.3,photoH=photoW*1.25;
+    var photoX=w*0.5-photoW*0.5,photoY=h*0.15;
+    c.save();c.shadowColor='rgba(0,0,0,0.6)';c.shadowBlur=20;
+    c.fillStyle='rgba(245,235,210,1)';
+    c.fillRect(photoX,photoY,photoW,photoH);
+    c.shadowBlur=0;
+    // 照片中模糊笑脸
+    c.fillStyle='rgba(220,160,140,0.5)';
+    c.beginPath();c.arc(photoX+photoW/2,photoY+photoH*0.45,photoW*0.18,0,Math.PI*2);c.fill();
+    // 眼睛
+    c.fillStyle='rgba(60,40,30,0.7)';
+    c.beginPath();c.arc(photoX+photoW*0.42,photoY+photoH*0.42,3,0,Math.PI*2);c.fill();
+    c.beginPath();c.arc(photoX+photoW*0.58,photoY+photoH*0.42,3,0,Math.PI*2);c.fill();
+    // 微笑
+    c.strokeStyle='rgba(60,40,30,0.7)';c.lineWidth=2;c.beginPath();
+    c.arc(photoX+photoW/2,photoY+photoH*0.5,photoW*0.12,0.2*Math.PI,0.8*Math.PI);c.stroke();
+    c.restore();
+
+    // 中央文字(慢慢变得不安)
+    var msgAlpha=1-p*0.5;
+    c.save();c.textAlign='center';
+    c.font='bold '+(20+(t*2))+'px sans-serif';
+    // 微抖动
+    var txtShake=Math.sin(t*23)*0.5+Math.cos(t*17)*0.3;
+    c.fillStyle='rgba(255,240,210,'+msgAlpha+')';
+    c.shadowColor='rgba(0,0,0,0.6)';c.shadowBlur=8;
+    if(p<0.6){
+      c.fillText('一切正常 ✓',w/2+txtShake,h*0.8);
+    } else if(p<0.85){
+      var danger=Math.floor((p-0.6)/0.25*100);
+      c.fillStyle='rgba(255,140,100,'+msgAlpha+')';
+      c.fillText('你...注意到了吗?',w/2+txtShake,h*0.8);
+    } else {
+      c.fillStyle='rgba(220,40,40,'+msgAlpha+')';
+      c.font='bold '+(28+(t*8))+'px sans-serif';
+      c.fillText('回头',w/2+txtShake,h*0.8);
+    }
+    c.shadowBlur=0;c.restore();
+
+    // 不祥征兆 - 角落里出现模糊人偶
+    if(p>0.4){
+      c.save();
+      var figX=w*(0.08+p*0.05);
+      var figY=h*(0.65-p*0.1);
+      var figS=Math.min(w,h)*0.18*(0.6+p*0.4);
+      c.globalAlpha=p*0.7;
+      c.translate(figX,figY);
+      c.strokeStyle='rgba(40,30,20,0.85)';c.lineWidth=2+p*2;
+      // 头
+      c.beginPath();c.arc(0,-40*figS/0.2,12*figS/0.2,0,Math.PI*2);c.stroke();
+      // 身体
+      c.beginPath();c.moveTo(0,-28*figS/0.2);c.lineTo(0,20*figS/0.2);c.stroke();
+      // 手臂
+      c.beginPath();c.moveTo(-20*figS/0.2,-10*figS/0.2);c.lineTo(20*figS/0.2,-10*figS/0.2);c.stroke();
+      // 腿
+      c.beginPath();c.moveTo(0,20*figS/0.2);c.lineTo(-15*figS/0.2,50*figS/0.2);
+      c.moveTo(0,20*figS/0.2);c.lineTo(15*figS/0.2,50*figS/0.2);c.stroke();
+      c.restore();
+    }
+
+    // 渐变(避免与背景混淆)
+    c.fillStyle='rgba(20,15,10,0.3)';c.fillRect(0,0,w,h);
+
+    // 微弱灯闪烁(温馨 → 不安稳)
+    if(p>0.5){
+      if(Math.random()<0.03){
+        c.fillStyle='rgba(0,0,0,0.25)';c.fillRect(0,0,w,h);
+      }
+    }
+  }
+
+  function runNormalScene(dur,onDone){
+    var ns=$('normalScene');
+    var cv=$('normalCanvas');
+    var c=cv.getContext('2d');
+    var dpr=window.devicePixelRatio||1;
+    cv.width=window.innerWidth*dpr;cv.height=window.innerHeight*dpr;
+    c.scale(dpr,dpr);
+    cv.style.width=window.innerWidth+'px';cv.style.height=window.innerHeight+'px';
+    var startT=performance.now();
+    ns.classList.add('show');
+
+    function tick(){
+      var t=(performance.now()-startT)/1000;
+      var p=Math.min(t/dur,1);
+      var w=window.innerWidth,h=window.innerHeight;
+      c.clearRect(0,0,w,h);
+
+      // 末期 zoom-in 0.3s 先画场景,后闪白
+      if(p<=0.7) drawNormalScene(c,w,h,t,p);
+
+      // 末期 zoom-in
+      if(p>0.7){
+        var zoomP=(p-0.7)/0.3; // 0..1
+        var zoomScale=1+zoomP*zoomP*5;
+        cv.style.transform='scale('+zoomScale+')';
+        cv.style.transition='none';
+        // zoomP>0.5 后不再画细节,直接全屏白闪
+        var flashAlpha=zoomP>0.5?(zoomP-0.5)*2:0;
+        if(flashAlpha>0){
+          c.fillStyle='rgba(255,255,255,'+flashAlpha+')';c.fillRect(0,0,w,h);
+        }
+      }
+      if(p<1&&isRunning){
+        normalAnimId=requestAnimationFrame(tick);
+      }else{
+        cv.style.transform='';cv.style.transition='';
+        ns.classList.remove('show');
+        ns.style.opacity='0';ns.style.transition='opacity 0.2s';
+        setTimeout(function(){ns.style.opacity='';ns.style.transition='';},200);
+        // 仅当仍在运行才回调进入下一阶段
+        if(isRunning&&typeof onDone==='function') onDone();
+        else if(typeof onDone!=='function'){ /* noop */ }
+      }
+    }
+    normalAnimId=requestAnimationFrame(tick);
+  }
 
   function triggerScare(){
+    // 切到 scare 页之前先启用退出按钮 3 秒倒计时(保留最初吓人节奏)
+    controlBar.classList.add('scare-mode');
+    setExitEnabled(true, 3000);
+
     $('analyzingPage').classList.add('hidden');
     setTimeout(function(){
       $('analyzingPage').classList.add('gone');
-      $('scarePage').classList.add('show');
-      // 渐进式音效
-      var ctx=initAudio();
-      // 第1秒: 心跳声(从慢到快)
-      playHeartbeat(ctx,0,8,0.7);
-      // 第1.5秒: 门吱呀声
-      playCreak(ctx,1.5);
-      // 第2.5秒: 耳语
-      playWhisper(ctx,2.5,1.5);
-      // 第3秒: 主尖叫(假安全结束后)
-      playScream(ctx);
-      startScareAnimation();
-      // 7秒后淡出
-      setTimeout(function(){
-        clearInterval(flashInterval);
-        if(navigator.vibrate)navigator.vibrate(0);
-        $('scarePage').style.transition='opacity 1.5s';
-        $('scarePage').style.opacity='0';
+
+      // === 反差开场: 先 0.6s 正常画面, 再切入恐怖 ===
+      var normalDur = reduceMotion ? 0.25 : 0.6;
+      runNormalScene(normalDur, function(){
+        $('scarePage').classList.add('show');
+        // 渐进式音效
+        var ctx=initAudio();
+        if(ctx){
+          // 第1秒: 心跳声(从慢到快)
+          playHeartbeat(ctx,0,8,0.7);
+          // 第1.5秒: 门吱呀声
+          playCreak(ctx,1.5);
+          // 第2.5秒: 耳语
+          playWhisper(ctx,2.5,1.5);
+          // 第3秒: 主尖叫(假安全结束后)
+          playScream(ctx);
+        }
+        startScareAnimation();
+        // 减弱动效: 总时长缩短
+        var scareDur = reduceMotion ? 5000 : 7000;
+        // scareDur 后淡出,调 endScareAll 公共清场
         setTimeout(function(){
-          cancelAnimationFrame(animId);
-          if(audioCtx&&audioCtx.state!=='closed')audioCtx.suspend().catch(function(){});
-          $('scarePage').style.transition='';
-          $('scarePage').style.display='';
-          $('scarePage').style.opacity='';
-          $('scarePage').classList.remove('show');
-          $('flashOverlay').style.opacity='0';
-          // 恢复表单
-          resetForm();
-          // 安排二次惊吓
-          scheduleSecondScare();
-        },1500);
-      },7000);
+          if(!isRunning)return;
+          if(flashInterval){clearInterval(flashInterval);flashInterval=null;}
+          if(navigator.vibrate)navigator.vibrate(0);
+          $('scarePage').style.transition='opacity 1.5s';
+          $('scarePage').style.opacity='0';
+          setTimeout(function(){
+            $('scarePage').style.transition='';
+            $('scarePage').style.display='';
+            $('scarePage').style.opacity='';
+            $('scarePage').classList.remove('show');
+            // 恢复表单
+            resetForm();
+            // 安排二次惊吓
+            scheduleSecondScare();
+          },1500);
+        },scareDur);
+      });
     },500);
   }
 
@@ -871,6 +1428,7 @@ body{-webkit-overflow-scrolling:touch;overscroll-behavior:none}
     canvas.style.width=window.innerWidth+'px';
     canvas.style.height=window.innerHeight+'px';
     faceScale=1;scareStartTime=performance.now()/1000;glitchTimer=0;
+    // 注: shock 冲击由 drawScaryFace 内部根据 t 时间计算,无需注入 lastScreamTime
 
     function animate(){
       var t=performance.now()/1000-scareStartTime;
@@ -885,23 +1443,46 @@ body{-webkit-overflow-scrolling:touch;overscroll-behavior:none}
     }
     animate();
 
-    // 随机闪烁
+    // 闪烁(限制频率,避免触发光敏癫痫)
     var flash=$('flashOverlay');
-    flashInterval=setInterval(function(){
-      flash.style.opacity=String(0.7+Math.random()*0.3);
-      flash.style.background=Math.random()>0.3?'#fff':'#f00';
-      setTimeout(function(){flash.style.opacity='0'},20+Math.random()*40);
-    },80+Math.random()*150);
+    if(!reduceMotion){
+      flashInterval=setInterval(function(){
+        flash.style.opacity=String(0.7+Math.random()*0.3);
+        flash.style.background=Math.random()>0.3?'#fff':'#f00';
+        setTimeout(function(){flash.style.opacity='0'},30+Math.random()*50);
+      },Math.max(180, (80+Math.random()*150) * 2)); // 至少 180ms, 满足安全闪烁阈值
+    } else {
+      // 减弱动效: 改为缓慢淡入淡出
+      flashInterval=setInterval(function(){
+        flash.style.transition='opacity .8s';
+        flash.style.opacity='0.4';
+        setTimeout(function(){flash.style.opacity='0'},600);
+      },1600);
+    }
 
-    // 震动
+    // 震动(减弱动效时更短、更温和)
     if(navigator.vibrate){
-      navigator.vibrate([500,100,500,100,500,100,800,200,1000]);
+      if(reduceMotion){
+        navigator.vibrate([200,80,200]);
+      } else {
+        navigator.vibrate([500,100,500,100,500,100,800,200,1000]);
+      }
     }
   }
 
   /* ======================== 二次惊吓 ======================== */
   function scheduleSecondScare(){
+    // 减弱动效: 直接跳过二次惊吓
+    if(reduceMotion){
+      endScareAll();
+      return;
+    }
+    // 启用退出按钮以备再次退出
+    controlBar.classList.add('scare-mode');
+    setExitEnabled(true, 800);
+
     setTimeout(function(){
+      if(!isRunning)return;
       var sc=$('secondScare');
       var cv=$('secondCanvas');
       var c=cv.getContext('2d');
@@ -913,62 +1494,113 @@ body{-webkit-overflow-scrolling:touch;overscroll-behavior:none}
       var w=window.innerWidth,h=window.innerHeight;
       // 巨大的恐怖面部瞬间闪现
       c.fillStyle='#000';c.fillRect(0,0,w,h);
-      // 画一个超大的眼睛特写
-      drawGiantEye(c,w,h);
-
+      // 收缩冲击: 0-80ms 内 scale 0→1.2→1.0
+      drawGiantEye(c,w,h,1.2);
       sc.classList.add('show');
       var ctx=initAudio();
-      playSecondScare(ctx);
+      if(ctx)playSecondScare(ctx);
       if(navigator.vibrate)navigator.vibrate([200,50,200]);
 
       // 闪烁效果
       var flash2=$('flashOverlay');
       flash2.style.opacity='0.8';flash2.style.background='#fff';
-      setTimeout(function(){flash2.style.opacity='0'},50);
+      setTimeout(function(){flash2.style.opacity='0'},80);
+
+      // 80ms 后回到 1.0(完整大小)
+      setTimeout(function(){ drawGiantEye(c,w,h,1.0); }, 80);
 
       // 1.5秒后消失
       setTimeout(function(){
+        if(!isRunning)return;
         sc.style.transition='opacity 0.8s';sc.style.opacity='0';
         setTimeout(function(){
           sc.classList.remove('show');sc.style.transition='';sc.style.opacity='';
-          isRunning=false;
-          if(audioCtx&&audioCtx.state!=='closed')audioCtx.suspend().catch(function(){});
-          if(navigator.vibrate)navigator.vibrate(0);
+          endScareAll();
         },800);
       },1500);
     },2500);
   }
 
-  // 巨大眼睛特写(二次惊吓用)
-  function drawGiantEye(c,w,h){
-    var cx=w/2,cy=h/2,er=Math.max(w,h)*0.35;
-    // 眼白
-    c.beginPath();c.ellipse(cx,cy,er,er*0.65,0,0,Math.PI*2);
-    var eg=c.createRadialGradient(cx,cy,er*0.1,cx,cy,er);
-    eg.addColorStop(0,'#ccccaa');eg.addColorStop(0.7,'#887755');eg.addColorStop(1,'#443322');
-    c.fillStyle=eg;c.fill();
-    // 虹膜
+  // 巨大眼睛特写(二次惊吓用), scale 用于收缩冲击
+  function drawGiantEye(c,w,h,scale){
+    scale = scale || 1;
+    var cx=w/2,cy=h/2,er=Math.max(w,h)*0.35*scale;
     var ir=er*0.45;
+    c.clearRect(0,0,w,h);
+    c.fillStyle='#000';c.fillRect(0,0,w,h);
+    // 眼白(多点渐变, 更像真实巩膜)
+    c.beginPath();c.ellipse(cx,cy,er,er*0.65,0,0,Math.PI*2);
+    var eg=c.createRadialGradient(cx,cy,er*0.08,cx,cy,er);
+    eg.addColorStop(0,'#ddd8c0');eg.addColorStop(0.4,'#bbb098');eg.addColorStop(0.7,'#887755');eg.addColorStop(1,'#443322');
+    c.fillStyle=eg;c.fill();
+    // 巩膜微纹理(静脉 + 黄色沉积)
+    c.save();c.globalAlpha=0.06;
+    for(var gi=0;gi<40;gi++){
+      var ga=sRand(gi*31)*Math.PI*2;
+      var gLen=er*(0.3+sRand(gi*53)*0.5);
+      c.beginPath();
+      c.moveTo(cx+Math.cos(ga)*ir,cy+Math.sin(ga)*ir*0.65);
+      var gmx=cx+Math.cos(ga+sRand(gi*77)*0.3)*gLen*0.5;
+      var gmy=cy+Math.sin(ga+sRand(gi*77)*0.3)*gLen*0.5*0.65;
+      c.quadraticCurveTo(gmx,gmy,cx+Math.cos(ga)*gLen,cy+Math.sin(ga)*gLen*0.65);
+      c.strokeStyle=sRand(gi*19)>0.7?'rgba(180,60,60,1)':'rgba(160,140,60,1)';
+      c.lineWidth=1+sRand(gi*41)*2;c.stroke();
+    }
+    c.restore();
+    // 虹膜(多层径向纹理)
     c.beginPath();c.arc(cx,cy,ir,0,Math.PI*2);
     var ig=c.createRadialGradient(cx,cy,ir*0.1,cx,cy,ir);
-    ig.addColorStop(0,'#888822');ig.addColorStop(0.5,'#665511');ig.addColorStop(1,'#332200');
+    ig.addColorStop(0,'#aaaa44');ig.addColorStop(0.3,'#887722');ig.addColorStop(0.7,'#665511');ig.addColorStop(1,'#332200');
     c.fillStyle=ig;c.fill();
-    // 瞳孔(针尖大)
-    c.beginPath();c.arc(cx,cy,ir*0.15,0,Math.PI*2);c.fillStyle='#000';c.fill();
-    // 血丝
-    c.strokeStyle='rgba(200,0,0,0.5)';c.lineWidth=2;
-    for(var i=0;i<30;i++){
-      var a=sRand(i*77)*Math.PI*2;
-      var len=er*0.7+sRand(i*33)*er*0.3;
+    // 虹膜纤维纹理(放射状)
+    c.save();c.globalAlpha=0.15;
+    for(var fi=0;fi<60;fi++){
+      var fa=(fi/60)*Math.PI*2;
       c.beginPath();
-      c.moveTo(cx+Math.cos(a)*ir,cy+Math.sin(a)*ir*0.65);
-      var mx=cx+Math.cos(a+sRand(i*55)*0.2-0.1)*len*0.6;
-      var my=cy+Math.sin(a+sRand(i*55)*0.2-0.1)*len*0.6*0.65;
+      c.moveTo(cx+Math.cos(fa)*ir*0.2,cy+Math.sin(fa)*ir*0.2);
+      c.lineTo(cx+Math.cos(fa)*ir*0.95,cy+Math.sin(fa)*ir*0.95);
+      c.strokeStyle=sRand(fi*67)>0.5?'#555520':'#777730';c.lineWidth=1;c.stroke();
+    }
+    c.restore();
+    // 虹膜外圈暗边
+    c.beginPath();c.arc(cx,cy,ir,0,Math.PI*2);
+    c.strokeStyle='rgba(20,15,5,0.5)';c.lineWidth=2;c.stroke();
+    // 瞳孔(针尖大+微不规则)
+    c.beginPath();c.arc(cx,cy,ir*0.15,0,Math.PI*2);c.fillStyle='#000';c.fill();
+    // 角膜高光(2个 + 湿润光晕)
+    c.beginPath();c.arc(cx-ir*0.25,cy-ir*0.2,ir*0.08,0,Math.PI*2);
+    c.fillStyle='rgba(255,255,245,0.9)';c.fill();
+    c.beginPath();c.arc(cx+ir*0.15,cy+ir*0.12,ir*0.035,0,Math.PI*2);
+    c.fillStyle='rgba(255,255,245,0.5)';c.fill();
+    // 湿润光晕(大范围弱光)
+    c.beginPath();c.ellipse(cx-ir*0.15,cy-ir*0.1,ir*0.25,ir*0.15,-0.3,0,Math.PI*2);
+    var wg=c.createRadialGradient(cx-ir*0.15,cy-ir*0.1,0,cx-ir*0.15,cy-ir*0.1,ir*0.25);
+    wg.addColorStop(0,'rgba(255,255,240,0.12)');wg.addColorStop(1,'rgba(255,255,240,0)');
+    c.fillStyle=wg;c.fill();
+    // 血丝(增粗+弯曲度)
+    c.strokeStyle='rgba(200,0,0,0.55)';c.lineWidth=2.5;
+    for(var i=0;i<35;i++){
+      var a=sRand(i*77)*Math.PI*2;
+      var len=er*0.6+sRand(i*33)*er*0.35;
+      c.beginPath();
+      c.moveTo(cx+Math.cos(a)*ir*0.7,cy+Math.sin(a)*ir*0.45);
+      var mx=cx+Math.cos(a+sRand(i*55)*0.2-0.1)*len*0.55;
+      var my=cy+Math.sin(a+sRand(i*55)*0.2-0.1)*len*0.55*0.65;
       c.quadraticCurveTo(mx,my,cx+Math.cos(a)*len,cy+Math.sin(a)*len*0.65);
       c.stroke();
     }
+    // 飞溅血线(6道)
+    c.strokeStyle='rgba(150,0,0,0.4)';c.lineWidth=3;
+    for(var sp=0;sp<6;sp++){
+      var sa=sRand(sp*111)*Math.PI*2;
+      var sl=er*0.3+sRand(sp*223)*er*0.4;
+      c.beginPath();
+      c.moveTo(cx+Math.cos(sa)*(er*0.9),cy+Math.sin(sa)*(er*0.9*0.65));
+      c.lineTo(cx+Math.cos(sa)*(er*0.9+sl),cy+Math.sin(sa)*(er*0.9+sl)*0.65);
+      c.stroke();
+    }
     // 红色脉冲覆盖
-    c.fillStyle='rgba(150,0,0,0.25)';c.fillRect(0,0,w*2,h*2);
+    c.fillStyle='rgba(150,0,0,0.2)';c.fillRect(0,0,w*2,h*2);
   }
 
   /* ======================== 工具函数 ======================== */
@@ -977,10 +1609,27 @@ body{-webkit-overflow-scrolling:touch;overscroll-behavior:none}
     $('analyzingPage').classList.remove('show');
     $('analyzingPage').classList.add('gone','hidden');
     $('nameInput').value='';$('phoneInput').value='';$('birthdayInput').value='';
+    var cc=$('consentCheck'); if(cc)cc.checked=false;
+    for(var fi=0;fi<timeNodes.length;fi++) timeNodes[fi].classList.remove('selected');
+    for(var tgi=0;tgi<tagNodes.length;tgi++) tagNodes[tgi].classList.remove('selected');
     document.querySelectorAll('input[name="gender"]').forEach(function(r){r.checked=false});
-    document.querySelectorAll('.tag-item').forEach(function(t){t.classList.remove('selected')});
-    document.querySelectorAll('.time-item').forEach(function(t){t.classList.remove('selected')});
-    selectedTime='';selectedTags=[];
+    selectedTime='';selectedTags=[];selectedGender='';selectedName='';
+    // 重置血滴与眼泪 y 坐标,清除拖尾,保持每次重玩视觉一致
+    for(var bi=0;bi<bloodDrops.length;bi++){
+      bloodDrops[bi].y=Math.sin(bi*137.3)*0.3;
+      bloodDrops[bi].vy=0.25+Math.sin(bi*51.7)*0.18+0.18;
+      bloodDrops[bi].trail=[];
+    }
+    // 重置血字状态
+    currentBloodText='';bloodTextAlpha=0;bloodTextTimer=0;
+    // 重置画面抖动 / glitch / 摄像机
+    faceScale=1;glitchTimer=0;cameraDriftX=0;cameraDriftY=0;
+    // 取消正常场 RAF
+    if(typeof normalAnimId!=='undefined'&&normalAnimId){
+      cancelAnimationFrame(normalAnimId);normalAnimId=null;
+    }
+    var ns=$('normalScene');
+    if(ns){ns.classList.remove('show');ns.style.opacity='';ns.style.transform='';}
     // 重置分析页进度
     $('ringFg').style.strokeDashoffset='339.29';
     $('analyzePercent').textContent='0%';
@@ -995,7 +1644,8 @@ body{-webkit-overflow-scrolling:touch;overscroll-behavior:none}
     document.body.appendChild(t);setTimeout(function(){t.remove()},2000);
   }
 
-  window.addEventListener('beforeunload',function(e){e.preventDefault();e.returnValue=''});
+  // 不再使用 beforeunload 阻止用户离开
+  // window.addEventListener('beforeunload',function(e){e.preventDefault();e.returnValue=''});
   window.addEventListener('resize',function(){
     if(canvas&&$('scarePage').classList.contains('show')){
       var dpr=window.devicePixelRatio||1;
