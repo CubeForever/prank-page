@@ -11,7 +11,7 @@
 | -------- | --------------------------------------------------------------- |
 | **类型** | 单文件静态网页                                                  |
 | **依赖** | 零外部依赖(图片、音效、动画全部由代码生成)                      |
-| **大小** | 约 47 KB                                                       |
+| **大小** | 约 65 KB(单文件)                                               |
 | **场景** | 移动端为主,PC 浏览器亦可                                       |
 | **风险** | 含强烈闪烁/振动/音效,**自愿、勿对禁用人群使用**                |
 
@@ -126,17 +126,27 @@ prank/
 
 ## ⚙️ 调档(开发者可选)
 
-在 `index.html` 顶部 JS 区可调整:
+所有硬编码参数集中在 `CONFIG` 对象(JS 顶部),可直接修改:
 
 ```js
-mot ionScale = reduceMotion ? 0.5 : 1;  // 减弱动效时整体动效衰减倍率
-audioScale   = reduceMotion ? 0.6 : 1;  // 减弱动效时音强倍率
-muted        = false;                   // 用户静音状态
+const CONFIG = {
+  HAIR_BACK_COUNT: 160,          // 后层头发根数
+  HAIR_FRONT_COUNT: 60,          // 前层头发根数
+  BLOOD_DROP_COUNT: 36,          // 血滴数
+  SPOT_COUNT: 40,                // 面部腐烂斑点
+  CRACK_COUNT: 25,               // 裂纹条数
+  SCARE_DURATION_MS: 7000,       // 主惊吓时长(ms)
+  SCARE_DURATION_REDUCED_MS: 5000, // 减弱动效时
+  EXIT_BUTTON_DELAY_MS: 3000,    // 退出按钮延迟
+  FLASH_INTERVAL_MIN_MS: 180,    // 闪烁最小间隔(光敏安全)
+  // ... 更多参数见代码顶部
+};
 ```
 
-在 `drawScaryFace` 内部 `shockPoints` 数组控制屏幕冲击出现时刻,默认 `[3, 3.5, 4.2, 5.5]`。
-
-主惊吓时长 `scareDur = reduceMotion ? 5000 : 7000` 毫秒。
+屏幕冲击时刻可在 `drawScaryFace` 内 `shockPoints` 数组调整:
+```js
+const shockPoints = [3, 3.5, 4.2, 5.5];
+```
 
 ---
 
@@ -149,6 +159,13 @@ muted        = false;                   // 用户静音状态
 ---
 
 ## 📋 更新日志
+
+### v2.2 (2026-06-28) — 代码现代化重构
+- **A: 严格模式 + 作用域隔离** — 254 处 `var` 全部替换为 `const`(225 处)/`let`(54 处);启用 `'use strict'`;IIFE 封装,消除全局变量污染
+- **B: 拆分大函数** — `drawScaryFace`(原 ~400 行)拆为 14 个子函数(`drawHairBack`/`drawFaceSkin`/`drawEyes`/`drawMouth` 等),各函单一职责
+- **C: 配置集中化** — 所有魔法数字提取为 `CONFIG` 常量对象(头发根数/血滴数/时长/间隔等 23+ 参数),一键调参
+- **D: 错误兜底** — Canvas `getContext` 失败弹出友好提示;AudioContext 不可用静默退化;`initAudio()` `try-catch` 保护
+- **E: Bug 修复** — 修复 `drawShatter` 中 `let j` 在 for 循环外引用的 ReferenceError(原 `var j` 泄漏掩盖了该问题)
 
 ### v2.1 (2026-06-28) — 代码质量 + 体验优化
 - **A: 代码重构** — `endScareAll()` 抽离公共清理逻辑;`setExitEnabled()` 统一退出按钮;`selectedGender`/`selectedName` 内存变量替代 DOM query;缓存 `stepNodes`/`tagNodes`/`timeNodes` 减少 DOM 查询;`resetForm` 全量重置血字/血滴/时间/摄像机状态;统一 exitBtn disabled 管理;删除 `lastScreamTime` 死代码
