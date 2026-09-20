@@ -180,8 +180,8 @@
       }
     </style>
 </head>
-<body class="min-h-screen font-sans antialiased" style="background:#000">
-    <main class="relative w-full min-h-screen overflow-hidden bg-black">
+<body class="h-screen font-sans antialiased overflow-hidden" style="background:#000;height:100vh;height:100dvh;">
+    <main class="relative w-full h-full overflow-hidden bg-black flex flex-col">
       <style>
         /* 突入闪烁 */
         @keyframes jumpFlash {
@@ -238,10 +238,19 @@
           animation: jumpFlash 0.9s ease-out forwards;
           pointer-events: none;
         }
+        /* 视频舞台：flex 定高，保证手机端视频不会塌缩成 0 */
+        .scare-stage {
+          position: relative;
+          z-index: 11;
+          flex: 1 1 auto;
+          min-height: 0;
+          width: 100%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding-top: env(safe-area-inset-top);
+        }
         .scare-video {
-          position: absolute;
-          top: 0; bottom: 17%; left: 0; right: 0;
-          margin: auto;
           max-width: 100%;
           max-height: 100%;
           width: auto;
@@ -249,6 +258,7 @@
           object-fit: contain;
           transform-origin: center center;
           animation: scareZoom 5s ease-in-out infinite;
+          background: #000;
         }
         .red-vignette {
           position: absolute; inset: 0; z-index: 12;
@@ -290,8 +300,12 @@
         }
       </style>
 
-      <!-- 奶龙抽象诡异动画 -->
-      <video class="scare-video" src="../assets/nailong-abstract.mp4" autoplay muted loop playsinline preload="auto"></video>
+      <!-- 奶龙抽象诡异动画（flex 定高舞台，手机端不塌缩） -->
+      <div class="scare-stage">
+        <video id="scareVideo" class="scare-video" src="../assets/nailong-abstract.mp4?v=3"
+               autoplay muted loop playsinline webkit-playsinline x5-playsinline
+               preload="auto" disablepictureinpicture></video>
+      </div>
 
       <!-- 红光晕 -->
       <div class="red-vignette"></div>
@@ -301,14 +315,14 @@
       <!-- 开场突入闪烁 -->
       <div class="jump-flash"></div>
 
-      <!-- 底部恐怖文字 -->
-      <div class="absolute bottom-[12%] left-0 right-0 text-center z-[20] pointer-events-none px-6">
+      <!-- 底部恐怖文字（正常流，预留安全区，不压视频） -->
+      <div class="relative z-[20] shrink-0 w-full text-center px-6 pt-3 pb-[max(1.75rem,env(safe-area-inset-bottom))] pointer-events-none">
         <h1 class="horror-title relative font-serif text-[30px] font-bold tracking-[0.18em] inline-block" data-text="找到你了" style="color: var(--abyss-bone); text-shadow: 0 0 18px rgba(224,16,16,.85), 2px 0 0 rgba(224,16,16,.6);">找到你了</h1>
         <p class="horror-sub font-serif text-[13px] mt-3 tracking-[0.25em]" style="color: #ff3a3a;">它一直是奶龙</p>
       </div>
 
       <!-- 右上角按钮 -->
-      <div class="absolute top-3 right-3 z-30 flex items-center gap-2">
+      <div class="absolute top-3 right-3 z-30 flex items-center gap-2" style="top:max(0.75rem,env(safe-area-inset-top));">
         <button aria-label="静音" class="w-[42px] h-[42px] rounded-full bg-black/55 border border-white/25 flex items-center justify-center backdrop-blur-sm">
           <i data-lucide="volume-x" class="w-5 h-5 text-white/70"></i>
         </button>
@@ -317,6 +331,29 @@
         </button>
       </div>
     </main>
-    <script>lucide.createIcons();</script>
+    <script>
+      lucide.createIcons();
+
+      // 移动端自动播放加固（iOS Safari / 微信·QQ 的 X5 内核）
+      (function () {
+        var v = document.getElementById('scareVideo');
+        function play() {
+          v.muted = true;
+          var p = v.play();
+          if (p && typeof p.catch === 'function') p.catch(function () {});
+        }
+        v.addEventListener('loadeddata', play);
+        v.addEventListener('canplay', play);
+        ['touchstart', 'touchend', 'pointerdown', 'click'].forEach(function (evt) {
+          window.addEventListener(evt, play, { passive: true });
+        });
+        document.addEventListener('visibilitychange', function () {
+          if (!document.hidden) play();
+        });
+        // 页面回退时重新播放
+        window.addEventListener('pageshow', play);
+        play();
+      })();
+    </script>
 </body>
 </html>
