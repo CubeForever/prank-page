@@ -95,4 +95,4 @@ https://<你的用户名>.github.io/<仓库名>/
 
 ## 许可证
 
-基于原项目二次创作，遵循 [zlib License](LICENSE)（原作者 © 曹烨洲）。
+基于原项目二次创作，遵循 [zlib License](LICENSE)（原作者 © CubeForever）。
