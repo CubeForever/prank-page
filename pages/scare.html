@@ -291,19 +291,49 @@
         .horror-sub {
           animation: subJitter 0.18s linear infinite;
         }
+        /* 点击解锁层：兼容 iOS 低电量模式 / 微信·QQ 等拦截自动播放的环境 */
+        .tap-gate {
+          position: fixed; inset: 0; z-index: 60;
+          background: #000;
+          display: flex; flex-direction: column;
+          align-items: center; justify-content: center; gap: 26px;
+          transition: opacity .3s ease;
+          cursor: pointer;
+          -webkit-tap-highlight-color: transparent;
+        }
+        .tap-gate.is-hidden { opacity: 0; pointer-events: none; }
+        .gate-eye {
+          width: 92px; height: 92px;
+          animation: gatePulse 1.8s ease-in-out infinite;
+        }
+        @keyframes gatePulse {
+          0%, 100% { transform: scale(1); opacity: .7; filter: drop-shadow(0 0 10px rgba(212,168,90,.45)); }
+          50% { transform: scale(1.09); opacity: 1; filter: drop-shadow(0 0 24px rgba(212,168,90,.95)); }
+        }
+        .gate-text {
+          color: #d4a85a; font-size: 16px;
+          letter-spacing: .5em; padding-left: .5em;
+          font-family: var(--font-serif, serif);
+        }
+        .gate-sub {
+          color: #6f695c; font-size: 11px;
+          letter-spacing: .35em; padding-left: .35em;
+          font-family: var(--font-serif, serif);
+        }
         @media (prefers-reduced-motion: reduce) {
           .jump-flash { animation: none; opacity: 0; }
           .scare-video { animation: none; }
           .red-vignette { animation: none; }
           .scanlines { display: none; }
           .horror-title, .horror-title::after, .horror-sub { animation: none; }
+          .gate-eye { animation: none; }
         }
       </style>
 
-      <!-- 奶龙抽象诡异动画（flex 定高舞台，手机端不塌缩） -->
+      <!-- 奶龙抽象诡异动画（flex 定高舞台，手机端不塌缩；faststart 视频移动网络秒加载） -->
       <div class="scare-stage">
-        <video id="scareVideo" class="scare-video" src="../assets/nailong-abstract.mp4?v=3"
-               autoplay muted loop playsinline webkit-playsinline x5-playsinline
+        <video id="scareVideo" class="scare-video" src="../assets/nailong-abstract.mp4?v=4"
+               muted loop playsinline webkit-playsinline x5-playsinline
                preload="auto" disablepictureinpicture></video>
       </div>
 
@@ -330,29 +360,83 @@
           <i data-lucide="x" class="w-5 h-5 text-white/70"></i>
         </button>
       </div>
+      <!-- 点击解锁层（用户手势可在所有手机浏览器中解锁播放，含微信/iOS 低电量） -->
+      <div id="tapGate" class="tap-gate" role="button" aria-label="轻触屏幕开始">
+        <svg class="gate-eye" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <path d="M5 50 C28 20 72 20 95 50 C72 80 28 80 5 50 Z" stroke="#d4a85a" stroke-width="2.2"/>
+          <circle cx="50" cy="50" r="19" stroke="#d4a85a" stroke-width="1.4" opacity="0.7"/>
+          <ellipse cx="50" cy="50" rx="5.2" ry="16.5" fill="#d4a85a"/>
+          <circle cx="50" cy="40" r="1.6" fill="#1a1510"/>
+        </svg>
+        <div class="gate-text">轻 触 屏 幕</div>
+        <div class="gate-sub">凝 视 深 渊</div>
+      </div>
     </main>
     <script>
       lucide.createIcons();
 
-      // 移动端自动播放加固（iOS Safari / 微信·QQ 的 X5 内核）
+      // 惊吓揭示：由「点击解锁」或「自动播放被允许」统一触发
       (function () {
         var v = document.getElementById('scareVideo');
-        function play() {
+        var gate = document.getElementById('tapGate');
+        var flash = document.querySelector('.jump-flash');
+        var started = false;
+
+        function retrigger(el) {
+          if (!el) return;
+          el.style.animation = 'none';
+          void el.offsetWidth;
+          el.style.animation = '';
+        }
+
+        function beginScare() {
+          if (started) return;
+          started = true;
+          v.muted = true;
+          try { v.currentTime = 0; } catch (e) {}
+          var p = v.play();
+          if (p && typeof p.catch === 'function') {
+            p.catch(function () {
+              // 极少数内核仍拦截：保持解锁层，等待用户再点一次
+              started = false;
+            });
+          }
+          retrigger(flash);       // 血红突入与揭示瞬间对齐
+          retrigger(v);           // 缩放动画从头开始
+          gate.classList.add('is-hidden');
+          setTimeout(function () { gate.style.display = 'none'; }, 350);
+        }
+
+        // 用户手势：touchend 立即响应，click 兜底桌面/微信
+        gate.addEventListener('touchend', function (e) {
+          e.preventDefault();
+          beginScare();
+        }, { passive: false });
+        gate.addEventListener('click', beginScare);
+
+        // 后台回来 / 页面回退时续播
+        function resume() {
           v.muted = true;
           var p = v.play();
           if (p && typeof p.catch === 'function') p.catch(function () {});
         }
-        v.addEventListener('loadeddata', play);
-        v.addEventListener('canplay', play);
-        ['touchstart', 'touchend', 'pointerdown', 'click'].forEach(function (evt) {
-          window.addEventListener(evt, play, { passive: true });
-        });
         document.addEventListener('visibilitychange', function () {
-          if (!document.hidden) play();
+          if (!document.hidden) resume();
         });
-        // 页面回退时重新播放
-        window.addEventListener('pageshow', play);
-        play();
+        window.addEventListener('pageshow', resume);
+
+        // 探测自动播放：允许的环境（多数桌面/安卓）短暂延迟后自动揭示
+        v.muted = true;
+        var probe = v.play();
+        if (probe && typeof probe.then === 'function') {
+          probe.then(function () {
+            v.pause();
+            try { v.currentTime = 0; } catch (e) {}
+            setTimeout(beginScare, 450);
+          }).catch(function () {
+            v.load(); // 被拦截：预加载，等用户点击
+          });
+        }
       })();
     </script>
 </body>
