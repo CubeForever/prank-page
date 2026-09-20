@@ -72,21 +72,6 @@ npx serve .
 
 ---
 
-## 部署到 GitHub Pages
-
-1. 将仓库推送到 GitHub。
-2. 仓库 **Settings → Pages → Build and deployment → Source** 选择 `Deploy from a branch`。
-3. Branch 选择 `master` / 根目录 `/ (root)`，保存。
-4. 约一分钟后访问：
-
-```
-https://<你的用户名>.github.io/<仓库名>/
-```
-
-本项目为纯静态页面，无需任何构建命令或环境变量。
-
----
-
 ## 内容提示
 
 本作品包含突发强光、高频闪烁、诡异画面与惊吓音效式的视觉冲击，**仅用于朋友间自愿的娱乐整蛊**。请勿对心脏病、癫痫（光敏性）、孕妇、儿童或精神脆弱人群使用；观看者应随时可以关闭页面。
