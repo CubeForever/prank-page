@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>灵魂档案·占卜表单</title>
+    <style id="theme-vars">
+/* ============================================================
+   瞳渊 · 灵魂档案 — Brand Design Tokens
+   竖瞳之眼 · 深渊回望
+   暖奶油灯笼 → 抽象诡异 · 极致反差
+   ============================================================ */
+
+:root {
+  /* ---- Surfaces: warm cream parchment (cozy lantern parlor) ---- */
+  --abyss-background: #f7efe1;
+  --abyss-surface: #f0e5d0;
+  --abyss-surface-2: #e8d9bd;
+
+  /* ---- Text: warm dark cocoa ---- */
+  --abyss-foreground: #3d2c1a;
+  --abyss-foreground-secondary: #6b5740;
+  --abyss-muted: #e8d9bd;
+  --abyss-muted-foreground: #9a8668;
+
+  /* ---- Borders: soft warm tan ---- */
+  --abyss-border: #ddcdae;
+  --abyss-input: #ddcdae;
+  --abyss-ring: #c87f3a;
+
+  /* ---- Brand primary: warm terracotta amber (gentle lantern glow) ---- */
+  --abyss-primary: #c87f3a;
+  --abyss-primary-foreground: #fdf8f0;
+
+  /* ---- Card ---- */
+  --abyss-card: #fdf8ef;
+  --abyss-card-foreground: #3d2c1a;
+
+  /* ---- Popover ---- */
+  --abyss-popover: #fdf8ef;
+  --abyss-popover-foreground: #3d2c1a;
+
+  /* ---- Radius scale ---- */
+  --abyss-radius-sm: 4px;
+  --abyss-radius-md: 8px;
+  --abyss-radius-lg: 16px;
+
+  /* ---- Typography ---- */
+  --font-serif: "Noto Serif SC", "Source Han Serif SC", "SimSun", serif;
+  --font-sans: "Inter", "Noto Sans SC", "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+  --font-mono: "SF Mono", "Fira Code", "Consolas", monospace;
+
+  /* ---- Spacing (8pt grid) ---- */
+  --s-1: 4px;
+  --s-2: 8px;
+  --s-3: 12px;
+  --s-4: 16px;
+  --s-5: 24px;
+  --s-6: 32px;
+
+  /* ---- Shadows: soft warm shadows ---- */
+  --shadow-1: 0 1px 2px rgba(120,80,30,.04), 0 1px 1px rgba(120,80,30,.03);
+  --shadow-2: 0 8px 24px -8px rgba(120,80,30,.18);
+  --shadow-3: 0 24px 60px -20px rgba(80,50,15,.28);
+
+  /* ---- State colors ---- */
+  --state-error: #a83030;
+  --state-error-foreground: #fdf0f0;
+  --state-warning: #c88a30;
+  --state-success: #5a8a3a;
+  --state-info: #4a7a8a;
+
+  /* ---- Decorative: warm antique gold (cozy) ---- */
+  --abyss-gold: #b8863a;
+  --abyss-gold-dim: #c4a878;
+  --abyss-gold-bright: #d4a04a;
+
+  /* ---- Horror palette (pure shock on scare page) ---- */
+  --abyss-blood: #8b0000;
+  --abyss-blood-bright: #e01010;
+  --abyss-bone: #e8e0c8;
+}
+
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4.3.1/dist/index.global.js"></script>
+    <script src="https://unpkg.com/lucide@1.8.0/dist/umd/lucide.min.js"></script>
+    <style type="text/tailwindcss">
+  @theme inline {
+    --color-background: var(--abyss-background);
+    --color-foreground: var(--abyss-foreground);
+    --color-card: var(--abyss-card);
+    --color-card-foreground: var(--abyss-card-foreground);
+    --color-popover: var(--abyss-popover);
+    --color-popover-foreground: var(--abyss-popover-foreground);
+    --color-primary: var(--abyss-primary);
+    --color-primary-foreground: var(--abyss-primary-foreground);
+    --color-muted: var(--abyss-muted);
+    --color-muted-foreground: var(--abyss-muted-foreground);
+    --color-border: var(--abyss-border);
+    --color-input: var(--abyss-input);
+    --color-ring: var(--abyss-ring);
+    --radius-sm: var(--abyss-radius-sm);
+    --radius-md: var(--abyss-radius-md);
+    --radius-lg: var(--abyss-radius-lg);
+  }
+  @layer base {
+    body { background: var(--abyss-background); color: var(--abyss-foreground); }
+    td, th { @apply break-words; word-break: break-all; word-break: auto-phrase; }
+    th { @apply whitespace-nowrap; }
+  }
+    </style>
+    <style id="semantic-token-fallback">
+      .bg-background { background-color: var(--abyss-background); }
+      .text-background { color: var(--abyss-background); }
+      .border-background { border-color: var(--abyss-background); }
+      .ring-background { --tw-ring-color: var(--abyss-background); }
+      .bg-foreground { background-color: var(--abyss-foreground); }
+      .text-foreground { color: var(--abyss-foreground); }
+      .border-foreground { border-color: var(--abyss-foreground); }
+      .ring-foreground { --tw-ring-color: var(--abyss-foreground); }
+      .bg-card { background-color: var(--abyss-card); }
+      .text-card { color: var(--abyss-card); }
+      .border-card { border-color: var(--abyss-card); }
+      .ring-card { --tw-ring-color: var(--abyss-card); }
+      .bg-card-foreground { background-color: var(--abyss-card-foreground); }
+      .text-card-foreground { color: var(--abyss-card-foreground); }
+      .border-card-foreground { border-color: var(--abyss-card-foreground); }
+      .ring-card-foreground { --tw-ring-color: var(--abyss-card-foreground); }
+      .bg-popover { background-color: var(--abyss-popover); }
+      .text-popover { color: var(--abyss-popover); }
+      .border-popover { border-color: var(--abyss-popover); }
+      .ring-popover { --tw-ring-color: var(--abyss-popover); }
+      .bg-popover-foreground { background-color: var(--abyss-popover-foreground); }
+      .text-popover-foreground { color: var(--abyss-popover-foreground); }
+      .border-popover-foreground { border-color: var(--abyss-popover-foreground); }
+      .ring-popover-foreground { --tw-ring-color: var(--abyss-popover-foreground); }
+      .bg-primary { background-color: var(--abyss-primary); }
+      .text-primary { color: var(--abyss-primary); }
+      .border-primary { border-color: var(--abyss-primary); }
+      .ring-primary { --tw-ring-color: var(--abyss-primary); }
+      .bg-primary-foreground { background-color: var(--abyss-primary-foreground); }
+      .text-primary-foreground { color: var(--abyss-primary-foreground); }
+      .border-primary-foreground { border-color: var(--abyss-primary-foreground); }
+      .ring-primary-foreground { --tw-ring-color: var(--abyss-primary-foreground); }
+      .bg-muted { background-color: var(--abyss-muted); }
+      .text-muted { color: var(--abyss-muted); }
+      .border-muted { border-color: var(--abyss-muted); }
+      .ring-muted { --tw-ring-color: var(--abyss-muted); }
+      .bg-muted-foreground { background-color: var(--abyss-muted-foreground); }
+      .text-muted-foreground { color: var(--abyss-muted-foreground); }
+      .border-muted-foreground { border-color: var(--abyss-muted-foreground); }
+      .ring-muted-foreground { --tw-ring-color: var(--abyss-muted-foreground); }
+      .bg-border { background-color: var(--abyss-border); }
+      .text-border { color: var(--abyss-border); }
+      .border-border { border-color: var(--abyss-border); }
+      .ring-border { --tw-ring-color: var(--abyss-border); }
+      .bg-input { background-color: var(--abyss-input); }
+      .text-input { color: var(--abyss-input); }
+      .border-input { border-color: var(--abyss-input); }
+      .ring-input { --tw-ring-color: var(--abyss-input); }
+      .bg-ring { background-color: var(--abyss-ring); }
+      .text-ring { color: var(--abyss-ring); }
+      .border-ring { border-color: var(--abyss-ring); }
+      .ring-ring { --tw-ring-color: var(--abyss-ring); }
+    </style>
+    <style>
+      .no-scrollbar::-webkit-scrollbar { display: none; }
+      .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+      [data-icon] {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        -webkit-mask-size: contain;
+        mask-size: contain;
+        -webkit-mask-repeat: no-repeat;
+        mask-repeat: no-repeat;
+        -webkit-mask-position: center;
+        mask-position: center;
+        background-color: currentColor;
+      }
+    </style>
+</head>
+<body class="min-h-screen font-sans antialiased">
+    <main class="relative min-h-screen flex flex-col items-center" style="background: radial-gradient(ellipse 120% 70% at 50% 0%, #fbf3e3 0%, #f7efe1 45%, #f2e6d2 100%);">
+        <div class="absolute inset-0 pointer-events-none overflow-hidden" style="background: radial-gradient(circle 260px at 50% 6%, rgba(212,160,74,.16) 0%, transparent 70%);"></div>
+        <div class="absolute inset-0 pointer-events-none overflow-hidden">
+            <svg class="absolute left-1/2 top-[8%] -translate-x-1/2" width="440" height="440" viewBox="0 0 440 440" fill="none" style="opacity:0.3" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="220" cy="220" r="205" stroke="var(--abyss-border)" stroke-width="1"/>
+                <circle cx="220" cy="220" r="168" stroke="var(--abyss-border)" stroke-width="0.5"/>
+                <circle cx="220" cy="220" r="130" stroke="var(--abyss-border)" stroke-width="0.5" stroke-dasharray="2 4"/>
+                <circle cx="220" cy="220" r="92" stroke="var(--abyss-border)" stroke-width="0.5"/>
+                <line x1="220" y1="12" x2="220" y2="428" stroke="var(--abyss-border)" stroke-width="0.5" stroke-dasharray="1 6"/>
+                <line x1="12" y1="220" x2="428" y2="220" stroke="var(--abyss-border)" stroke-width="0.5" stroke-dasharray="1 6"/>
+            </svg>
+            <svg class="absolute inset-0 w-full h-full" fill="none" xmlns="http://www.w3.org/2000/svg" style="opacity:0.15">
+                <circle cx="38" cy="88" r="1.5" fill="var(--abyss-gold-dim)"/>
+                <circle cx="330" cy="128" r="1" fill="var(--abyss-gold-dim)"/>
+                <circle cx="52" cy="208" r="1" fill="var(--abyss-gold-dim)"/>
+                <circle cx="312" cy="312" r="1.5" fill="var(--abyss-gold-dim)"/>
+                <circle cx="92" cy="360" r="1" fill="var(--abyss-gold-dim)"/>
+                <circle cx="288" cy="52" r="1" fill="var(--abyss-gold-dim)"/>
+                <circle cx="352" cy="228" r="1" fill="var(--abyss-gold-dim)"/>
+                <circle cx="20" cy="288" r="1.5" fill="var(--abyss-gold-dim)"/>
+                <circle cx="172" cy="38" r="1" fill="var(--abyss-gold-dim)"/>
+                <circle cx="200" cy="382" r="1" fill="var(--abyss-gold-dim)"/>
+            </svg>
+        </div>
+        <div class="relative z-10 max-w-[360px] w-full mx-auto px-5 py-8 flex flex-col items-center">
+            <div class="flex flex-col items-center">
+                <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M4 24 C10 12, 38 12, 44 24 C38 36, 10 36, 4 24 Z" stroke="var(--abyss-gold)" stroke-width="1.5" fill="none"/>
+                    <circle cx="24" cy="24" r="12" fill="var(--abyss-primary)"/>
+                    <line x1="24" y1="12" x2="24" y2="17" stroke="var(--abyss-gold-bright)" stroke-width="0.6" opacity="0.6"/>
+                    <line x1="24" y1="31" x2="24" y2="36" stroke="var(--abyss-gold-bright)" stroke-width="0.6" opacity="0.6"/>
+                    <line x1="12" y1="24" x2="17" y2="24" stroke="var(--abyss-gold-bright)" stroke-width="0.6" opacity="0.6"/>
+                    <line x1="31" y1="24" x2="36" y2="24" stroke="var(--abyss-gold-bright)" stroke-width="0.6" opacity="0.6"/>
+                    <line x1="15.5" y1="15.5" x2="18.5" y2="18.5" stroke="var(--abyss-gold-bright)" stroke-width="0.5" opacity="0.4"/>
+                    <line x1="29.5" y1="29.5" x2="32.5" y2="32.5" stroke="var(--abyss-gold-bright)" stroke-width="0.5" opacity="0.4"/>
+                    <line x1="32.5" y1="15.5" x2="29.5" y2="18.5" stroke="var(--abyss-gold-bright)" stroke-width="0.5" opacity="0.4"/>
+                    <line x1="18.5" y1="29.5" x2="15.5" y2="32.5" stroke="var(--abyss-gold-bright)" stroke-width="0.5" opacity="0.4"/>
+                    <ellipse cx="24" cy="24" rx="2.5" ry="10" fill="#000000"/>
+                </svg>
+                <h1 class="font-serif text-[28px] font-bold tracking-[0.1em] mt-3 text-[var(--abyss-gold)]">瞳渊</h1>
+                <p class="font-serif text-[14px] mt-1 text-[var(--abyss-foreground-secondary)]">靈魂檔案</p>
+                <div class="w-12 h-px mt-3 bg-[var(--abyss-gold-dim)]"></div>
+            </div>
+            <div class="w-full max-w-[320px] mt-6">
+                <div class="w-full h-[3px] rounded-full overflow-hidden bg-[var(--abyss-border)]">
+                    <div class="h-full w-1/4 rounded-full transition-all duration-500 bg-[var(--abyss-gold)]"></div>
+                </div>
+                <p class="text-[11px] text-center mt-2 text-[var(--abyss-muted-foreground)]">第 一 步 ／ 共 四 步</p>
+            </div>
+            <div class="w-full max-w-[360px] border border-[var(--abyss-border)] rounded-[var(--abyss-radius-lg)] p-6 mt-4 bg-[var(--abyss-card)] shadow-[0_8px_24px_-8px_rgba(0,0,0,0.35)]">
+                <label class="font-serif text-[14px] font-semibold mb-2 block text-[var(--abyss-foreground)]">生辰</label>
+                <input id="birthDate" type="date" class="w-full h-11 rounded-[var(--abyss-radius-md)] border border-[var(--abyss-border)] bg-[var(--abyss-surface)] text-[var(--abyss-foreground)] px-3.5 text-[15px] focus:border-[var(--abyss-primary)] focus:outline-none transition-colors" style="color-scheme:light"/>
+                <label class="font-serif text-[14px] font-semibold mt-5 mb-2 block text-[var(--abyss-foreground)]">出生時辰</label>
+                <div id="timeGrid" class="grid grid-cols-3 gap-2">
+                    <div class="text-center py-2.5 px-1 border border-[var(--abyss-primary)] rounded-[var(--abyss-radius-md)] cursor-pointer transition-all bg-[var(--abyss-surface-2)] text-[var(--abyss-primary)]">
+                        <div class="text-[13px] font-semibold">子时</div>
+                        <div class="text-[10px] mt-0.5 text-[var(--abyss-muted-foreground)]">23-01</div>
+                    </div>
+                    <div class="text-center py-2.5 px-1 border border-[var(--abyss-border)] rounded-[var(--abyss-radius-md)] cursor-pointer transition-all bg-[var(--abyss-surface)] text-[var(--abyss-foreground)] hover:border-[var(--abyss-primary)] hover:text-[var(--abyss-primary)]">
+                        <div class="text-[13px] font-semibold">丑时</div>
+                        <div class="text-[10px] mt-0.5 text-[var(--abyss-muted-foreground)]">01-03</div>
+                    </div>
+                    <div class="text-center py-2.5 px-1 border border-[var(--abyss-border)] rounded-[var(--abyss-radius-md)] cursor-pointer transition-all bg-[var(--abyss-surface)] text-[var(--abyss-foreground)] hover:border-[var(--abyss-primary)] hover:text-[var(--abyss-primary)]">
+                        <div class="text-[13px] font-semibold">寅时</div>
+                        <div class="text-[10px] mt-0.5 text-[var(--abyss-muted-foreground)]">03-05</div>
+                    </div>
+                    <div class="text-center py-2.5 px-1 border border-[var(--abyss-border)] rounded-[var(--abyss-radius-md)] cursor-pointer transition-all bg-[var(--abyss-surface)] text-[var(--abyss-foreground)] hover:border-[var(--abyss-primary)] hover:text-[var(--abyss-primary)]">
+                        <div class="text-[13px] font-semibold">卯时</div>
+                        <div class="text-[10px] mt-0.5 text-[var(--abyss-muted-foreground)]">05-07</div>
+                    </div>
+                    <div class="text-center py-2.5 px-1 border border-[var(--abyss-border)] rounded-[var(--abyss-radius-md)] cursor-pointer transition-all bg-[var(--abyss-surface)] text-[var(--abyss-foreground)] hover:border-[var(--abyss-primary)] hover:text-[var(--abyss-primary)]">
+                        <div class="text-[13px] font-semibold">辰时</div>
+                        <div class="text-[10px] mt-0.5 text-[var(--abyss-muted-foreground)]">07-09</div>
+                    </div>
+                    <div class="text-center py-2.5 px-1 border border-[var(--abyss-border)] rounded-[var(--abyss-radius-md)] cursor-pointer transition-all bg-[var(--abyss-surface)] text-[var(--abyss-foreground)] hover:border-[var(--abyss-primary)] hover:text-[var(--abyss-primary)]">
+                        <div class="text-[13px] font-semibold">巳时</div>
+                        <div class="text-[10px] mt-0.5 text-[var(--abyss-muted-foreground)]">09-11</div>
+                    </div>
+                    <div class="text-center py-2.5 px-1 border border-[var(--abyss-border)] rounded-[var(--abyss-radius-md)] cursor-pointer transition-all bg-[var(--abyss-surface)] text-[var(--abyss-foreground)] hover:border-[var(--abyss-primary)] hover:text-[var(--abyss-primary)]">
+                        <div class="text-[13px] font-semibold">午时</div>
+                        <div class="text-[10px] mt-0.5 text-[var(--abyss-muted-foreground)]">11-13</div>
+                    </div>
+                    <div class="text-center py-2.5 px-1 border border-[var(--abyss-border)] rounded-[var(--abyss-radius-md)] cursor-pointer transition-all bg-[var(--abyss-surface)] text-[var(--abyss-foreground)] hover:border-[var(--abyss-primary)] hover:text-[var(--abyss-primary)]">
+                        <div class="text-[13px] font-semibold">未时</div>
+                        <div class="text-[10px] mt-0.5 text-[var(--abyss-muted-foreground)]">13-15</div>
+                    </div>
+                    <div class="text-center py-2.5 px-1 border border-[var(--abyss-border)] rounded-[var(--abyss-radius-md)] cursor-pointer transition-all bg-[var(--abyss-surface)] text-[var(--abyss-foreground)] hover:border-[var(--abyss-primary)] hover:text-[var(--abyss-primary)]">
+                        <div class="text-[13px] font-semibold">申时</div>
+                        <div class="text-[10px] mt-0.5 text-[var(--abyss-muted-foreground)]">15-17</div>
+                    </div>
+                    <div class="text-center py-2.5 px-1 border border-[var(--abyss-border)] rounded-[var(--abyss-radius-md)] cursor-pointer transition-all bg-[var(--abyss-surface)] text-[var(--abyss-foreground)] hover:border-[var(--abyss-primary)] hover:text-[var(--abyss-primary)]">
+                        <div class="text-[13px] font-semibold">酉时</div>
+                        <div class="text-[10px] mt-0.5 text-[var(--abyss-muted-foreground)]">17-19</div>
+                    </div>
+                    <div class="text-center py-2.5 px-1 border border-[var(--abyss-border)] rounded-[var(--abyss-radius-md)] cursor-pointer transition-all bg-[var(--abyss-surface)] text-[var(--abyss-foreground)] hover:border-[var(--abyss-primary)] hover:text-[var(--abyss-primary)]">
+                        <div class="text-[13px] font-semibold">戌时</div>
+                        <div class="text-[10px] mt-0.5 text-[var(--abyss-muted-foreground)]">19-21</div>
+                    </div>
+                    <div class="text-center py-2.5 px-1 border border-[var(--abyss-border)] rounded-[var(--abyss-radius-md)] cursor-pointer transition-all bg-[var(--abyss-surface)] text-[var(--abyss-foreground)] hover:border-[var(--abyss-primary)] hover:text-[var(--abyss-primary)]">
+                        <div class="text-[13px] font-semibold">亥时</div>
+                        <div class="text-[10px] mt-0.5 text-[var(--abyss-muted-foreground)]">21-23</div>
+                    </div>
+                </div>
+            </div>
+            <div class="w-full mt-6">
+                <button id="startBtn" type="button" class="w-full h-[46px] bg-[var(--abyss-primary)] text-[var(--abyss-primary-foreground)] rounded-[var(--abyss-radius-md)] font-serif text-[16px] font-bold cursor-pointer transition-all hover:brightness-110 active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-[var(--abyss-ring)]">
+                    凝视深渊
+                    <svg class="inline-block ml-2 align-middle" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M5 12h14"/>
+                        <path d="m13 5 7 7-7 7"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="mt-6 text-center">
+                <p class="text-[12px] text-[var(--abyss-muted-foreground)]">纯属娱乐 · 不上传任何信息</p>
+                <a href="#" class="underline underline-offset-2 text-[12px] text-[var(--abyss-foreground-secondary)]">查看使用须知</a>
+            </div>
+        </div>
+    </main>
+    <script>
+      lucide.createIcons();
+
+      // 时辰点选
+      const grid = document.getElementById('timeGrid');
+      const cells = Array.from(grid.children);
+      let selectedTime = '子时';
+      const active = ['border-[var(--abyss-primary)]','bg-[var(--abyss-surface-2)]','text-[var(--abyss-primary)]'];
+      const idle = ['border-[var(--abyss-border)]','bg-[var(--abyss-surface)]','text-[var(--abyss-foreground)]'];
+      cells.forEach(cell => {
+        cell.addEventListener('click', () => {
+          cells.forEach(c => {
+            c.classList.remove(...active); c.classList.add(...idle);
+          });
+          cell.classList.remove(...idle); cell.classList.add(...active);
+          selectedTime = cell.querySelector('div').textContent.trim();
+        });
+      });
+
+      // 进入凝视（分析页）
+      document.getElementById('startBtn').addEventListener('click', () => {
+        try {
+          const date = document.getElementById('birthDate').value || '未填写';
+          sessionStorage.setItem('abyss_fortune', JSON.stringify({ date, time: selectedTime }));
+        } catch (e) {}
+        window.location.href = 'analyzing.html';
+      });
+    </script>
+</body>
+</html>

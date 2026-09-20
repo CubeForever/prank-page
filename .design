@@ -1,0 +1,79 @@
+{
+  "data": [
+    {
+      "id": "page-form",
+      "title": "灵魂档案 · 占卜表单",
+      "type": "page",
+      "version": 1,
+      "createdAt": 1789914112000,
+      "canvasData": {
+        "x": 0,
+        "y": 0,
+        "group": 0,
+        "layoutSnapshot": {
+          "version": 1,
+          "contentHeight": 900,
+          "viewportWidth": 375,
+          "sourceHash": "fnv1a-3e53a3ca",
+          "measuredAt": 1789916772368
+        }
+      },
+      "devMetadata": {
+        "htmlSrc": "pages/form.html",
+        "interactions": []
+      }
+    },
+    {
+      "id": "page-analyzing",
+      "title": "灵魂深渊凝视中",
+      "type": "page",
+      "version": 1,
+      "createdAt": 1789914112000,
+      "canvasData": {
+        "x": 169,
+        "y": 0,
+        "group": 0,
+        "layoutSnapshot": {
+          "version": 1,
+          "contentHeight": 900,
+          "viewportWidth": 375,
+          "sourceHash": "fnv1a-f75c9e82",
+          "measuredAt": 1789916772368
+        }
+      },
+      "devMetadata": {
+        "htmlSrc": "pages/analyzing.html",
+        "interactions": []
+      }
+    },
+    {
+      "id": "page-scare",
+      "title": "深渊回望",
+      "type": "page",
+      "version": 1,
+      "createdAt": 1789914112000,
+      "canvasData": {
+        "x": 338,
+        "y": 0,
+        "group": 0,
+        "layoutSnapshot": {
+          "version": 1,
+          "contentHeight": 900,
+          "viewportWidth": 375,
+          "sourceHash": "fnv1a-182d1ee7",
+          "measuredAt": 1789916428739
+        }
+      },
+      "devMetadata": {
+        "htmlSrc": "pages/scare.html",
+        "interactions": []
+      }
+    }
+  ],
+  "config": {
+    "autoLayout": false,
+    "deviceType": "mobile",
+    "projectName": "瞳渊 · 灵魂档案",
+    "visualEditorEnabled": false
+  }
+}
